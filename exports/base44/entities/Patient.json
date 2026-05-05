@@ -1,0 +1,172 @@
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "episode_id": {
+      "type": "string"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "room_number": {
+      "type": "string"
+    },
+    "smoker": {
+      "type": "boolean"
+    },
+    "level_of_care": {
+      "type": "string",
+      "enum": [
+        "Detox",
+        "Residential",
+        "PHP",
+        "IOP",
+        "OP"
+      ]
+    },
+    "admit_date": {
+      "type": "string"
+    },
+    "length_of_stay": {
+      "type": "number"
+    },
+    "substance_encoded": {
+      "type": "number"
+    },
+    "high_risk_substance": {
+      "type": "number"
+    },
+    "has_prior_tx": {
+      "type": "number"
+    },
+    "prior_tx_count": {
+      "type": "number"
+    },
+    "age_encoded": {
+      "type": "number"
+    },
+    "unstable_housing": {
+      "type": "number"
+    },
+    "unemployed": {
+      "type": "number"
+    },
+    "psych_comorbid": {
+      "type": "number"
+    },
+    "criminal_justice": {
+      "type": "number"
+    },
+    "daily_use": {
+      "type": "number"
+    },
+    "no_self_help": {
+      "type": "number"
+    },
+    "service_encoded": {
+      "type": "number"
+    },
+    "iv_use": {
+      "type": "number"
+    },
+    "no_insurance": {
+      "type": "number"
+    },
+    "pain_level_score": {
+      "type": "number"
+    },
+    "adhd_sud_comorbidity_flag": {
+      "type": "number"
+    },
+    "calm_before_storm_velocity": {
+      "type": "number"
+    },
+    "female_flag": {
+      "type": "number"
+    },
+    "separated_flag": {
+      "type": "number"
+    },
+    "divorced_flag": {
+      "type": "number"
+    },
+    "pregnant_flag": {
+      "type": "number"
+    },
+    "employed_full_time": {
+      "type": "number"
+    },
+    "court_referral": {
+      "type": "number"
+    },
+    "self_referral": {
+      "type": "number"
+    },
+    "cliff_window": {
+      "type": "number"
+    },
+    "homeless": {
+      "type": "number"
+    },
+    "female_high_risk_sub": {
+      "type": "number"
+    },
+    "gender_encoded": {
+      "type": "number"
+    },
+    "referral_motivation_score": {
+      "type": "number"
+    },
+    "admission_number": {
+      "type": "number"
+    },
+    "risk_score": {
+      "type": "number"
+    },
+    "risk_tier": {
+      "type": "string",
+      "enum": [
+        "LOW",
+        "MODERATE",
+        "HIGH",
+        "CRITICAL"
+      ]
+    },
+    "previous_risk_score": {
+      "type": "number"
+    },
+    "velocity": {
+      "type": "number"
+    },
+    "alert_active": {
+      "type": "boolean"
+    },
+    "alert_reason": {
+      "type": "string"
+    },
+    "calm_before_storm_flag": {
+      "type": "boolean"
+    },
+    "top_drivers": {
+      "type": "string"
+    },
+    "intervention": {
+      "type": "string"
+    },
+    "known_peers": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Active",
+        "Discharged",
+        "AMA"
+      ]
+    }
+  },
+  "required": [],
+  "name": "Patient"
+}

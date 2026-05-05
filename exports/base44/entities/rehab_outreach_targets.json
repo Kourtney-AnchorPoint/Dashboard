@@ -1,0 +1,142 @@
+{
+  "batch_date": "2026-04-30",
+  "automation": "Daily Rehab Outreach — US Facilities",
+  "region_focus": "Midwest + Pacific + Mid-Atlantic rotation",
+  "targets": [
+    {
+      "facility_name": "Hazelden Betty Ford Foundation (Minnesota)",
+      "location": "Center City, MN",
+      "contact_name": "Michael Finegan",
+      "title": "Executive Vice President",
+      "email": "info@hazeldenbettyford.org",
+      "beds_estimated": 150,
+      "region": "Midwest"
+    },
+    {
+      "facility_name": "Valley Hope (Kansas)",
+      "location": "Norton, KS",
+      "contact_name": "Jerry Boyes",
+      "title": "CEO/President",
+      "email": "info@valleyhope.com",
+      "beds_estimated": 80,
+      "region": "Midwest"
+    },
+    {
+      "facility_name": "Acadia Healthcare (Tennessee - Addiction Recovery Centers)",
+      "location": "Nashville, TN",
+      "contact_name": "Leadership Team",
+      "title": "Regional Director",
+      "email": "admissions@academytreatment.com",
+      "beds_estimated": 120,
+      "region": "Southeast"
+    },
+    {
+      "facility_name": "Promises Treatment Centers (Malibu, CA)",
+      "location": "Malibu, CA",
+      "contact_name": "Director of Clinical Operations",
+      "title": "Clinical Leadership",
+      "email": "info@promises.com",
+      "beds_estimated": 100,
+      "region": "West Coast"
+    },
+    {
+      "facility_name": "Sierra Tucson (Arizona)",
+      "location": "Tucson, AZ",
+      "contact_name": "Clinical Leadership",
+      "title": "Executive Director",
+      "email": "info@sierratucson.com",
+      "beds_estimated": 90,
+      "region": "Southwest"
+    },
+    {
+      "facility_name": "Caron Foundation (Pennsylvania)",
+      "location": "Wernersville, PA",
+      "contact_name": "Executive Leadership",
+      "title": "Chief Clinical Officer",
+      "email": "info@caron.org",
+      "beds_estimated": 180,
+      "region": "Mid-Atlantic"
+    },
+    {
+      "facility_name": "Recovery Centers of America (New York)",
+      "location": "New York, NY",
+      "contact_name": "Network Leadership",
+      "title": "Chief Medical Officer",
+      "email": "admissions@recoverycentersofamerica.com",
+      "beds_estimated": 200,
+      "region": "Northeast"
+    },
+    {
+      "facility_name": "Foundations Recovery Network (Colorado)",
+      "location": "Denver, CO",
+      "contact_name": "Regional Director",
+      "title": "Chief Clinical Officer",
+      "email": "info@foundationsrecovery.com",
+      "beds_estimated": 110,
+      "region": "Mountain West"
+    },
+    {
+      "facility_name": "Betty Ford Center (California)",
+      "location": "Rancho Mirage, CA",
+      "contact_name": "Leadership Team",
+      "title": "Executive Director",
+      "email": "info@bettyfordcenter.org",
+      "beds_estimated": 84,
+      "region": "West Coast"
+    },
+    {
+      "facility_name": "Sheppard Pratt (Maryland - Addiction Center)",
+      "location": "Baltimore, MD",
+      "contact_name": "Clinical Director",
+      "title": "Director of Addiction Services",
+      "email": "addictionservices@sheppardpratt.org",
+      "beds_estimated": 95,
+      "region": "Mid-Atlantic"
+    },
+    {
+      "facility_name": "Renascent (Illinois)",
+      "location": "Chicago, IL",
+      "contact_name": "Executive Director",
+      "title": "CEO",
+      "email": "info@renascent.org",
+      "beds_estimated": 88,
+      "region": "Midwest"
+    },
+    {
+      "facility_name": "Sunrise Detox (Pennsylvania)",
+      "location": "Philadelphia, PA",
+      "contact_name": "Clinical Operations",
+      "title": "Medical Director",
+      "email": "info@sunrisedetox.com",
+      "beds_estimated": 72,
+      "region": "Mid-Atlantic"
+    },
+    {
+      "facility_name": "Evergreen Recovery Centers (Washington)",
+      "location": "Seattle, WA",
+      "contact_name": "Regional Leadership",
+      "title": "Executive Director",
+      "email": "info@evergreenrecovery.com",
+      "beds_estimated": 85,
+      "region": "Pacific"
+    },
+    {
+      "facility_name": "Watershed Treatment Center (Maine)",
+      "location": "Portland, ME",
+      "contact_name": "Clinical Leadership",
+      "title": "Executive Director",
+      "email": "info@watershedtreatment.org",
+      "beds_estimated": 68,
+      "region": "Northeast"
+    },
+    {
+      "facility_name": "Springbrook Behavioral Health (Texas)",
+      "location": "Austin, TX",
+      "contact_name": "Executive Director",
+      "title": "CEO",
+      "email": "info@springbrookbehavioralhealth.com",
+      "beds_estimated": 110,
+      "region": "South Central"
+    }
+  ]
+}

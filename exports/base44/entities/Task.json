@@ -1,0 +1,53 @@
+{
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Investor/Funding",
+        "Pilot/Sales",
+        "Product",
+        "Personal",
+        "Legal",
+        "Operations",
+        "Event"
+      ]
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "\ud83d\udd34 Critical",
+        "\ud83d\udfe1 High",
+        "\ud83d\udfe2 Medium",
+        "\u26aa Low"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "To Do",
+        "In Progress",
+        "Waiting",
+        "Done",
+        "Blocked"
+      ]
+    },
+    "due_date": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "contact": {
+      "type": "string"
+    },
+    "linked_opportunity": {
+      "type": "string"
+    }
+  },
+  "required": [],
+  "name": "Task"
+}

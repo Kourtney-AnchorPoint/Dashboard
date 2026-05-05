@@ -1,0 +1,50 @@
+{
+  "type": "object",
+  "properties": {
+    "patient_id": {
+      "type": "string"
+    },
+    "patient_name": {
+      "type": "string"
+    },
+    "alert_reason": {
+      "type": "string"
+    },
+    "action_taken": {
+      "type": "string"
+    },
+    "action_type": {
+      "type": "string",
+      "enum": [
+        "Counselor contacted patient",
+        "1:1 session scheduled",
+        "1:1 session completed",
+        "Discharge planning initiated",
+        "Family notified",
+        "BHT increased check-in frequency",
+        "Medication review ordered",
+        "Group therapy added",
+        "Peer separation implemented",
+        "Safety check completed",
+        "Custom note"
+      ]
+    },
+    "staff_name": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "score_at_action": {
+      "type": "number"
+    },
+    "follow_up_required": {
+      "type": "boolean"
+    },
+    "outcome_note": {
+      "type": "string"
+    }
+  },
+  "required": [],
+  "name": "ClinicalAction"
+}

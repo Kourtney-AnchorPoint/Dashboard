@@ -1,0 +1,208 @@
+/* Vega Sidebar Styles */
+
+#vega-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 380px;
+  height: 100vh;
+  background: #07070F;
+  border-left: 1px solid #D4159A;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: -4px 0 30px rgba(212, 21, 154, 0.2);
+}
+
+.vega-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(212, 21, 154, 0.3);
+  background: linear-gradient(135deg, rgba(212, 21, 154, 0.15), rgba(136, 68, 232, 0.1));
+}
+
+.vega-logo {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  background: linear-gradient(135deg, #D4159A, #8844E8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.vega-subtitle {
+  font-size: 10px;
+  color: #10D8F0;
+  letter-spacing: 2px;
+  margin-left: 10px;
+  margin-top: 2px;
+  opacity: 0.8;
+}
+
+.vega-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+
+.vega-close:hover {
+  color: #D4159A;
+}
+
+.vega-context-bar {
+  padding: 8px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.vega-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.vega-badge.linkedin { background: rgba(0, 119, 181, 0.2); color: #0077B5; border: 1px solid rgba(0, 119, 181, 0.4); }
+.vega-badge.gmail { background: rgba(234, 67, 53, 0.15); color: #EA4335; border: 1px solid rgba(234, 67, 53, 0.3); }
+.vega-badge.wix { background: rgba(212, 21, 154, 0.15); color: #D4159A; border: 1px solid rgba(212, 21, 154, 0.3); }
+.vega-badge.web { background: rgba(16, 216, 240, 0.1); color: #10D8F0; border: 1px solid rgba(16, 216, 240, 0.2); }
+
+.vega-quick-actions {
+  display: flex;
+  gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  flex-wrap: wrap;
+}
+
+.vega-quick-btn {
+  background: rgba(212, 21, 154, 0.1);
+  border: 1px solid rgba(212, 21, 154, 0.3);
+  color: #D4159A;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.vega-quick-btn:hover {
+  background: rgba(212, 21, 154, 0.25);
+  border-color: #D4159A;
+}
+
+.vega-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+
+.vega-messages::-webkit-scrollbar { width: 4px; }
+.vega-messages::-webkit-scrollbar-track { background: transparent; }
+.vega-messages::-webkit-scrollbar-thumb { background: rgba(212, 21, 154, 0.3); border-radius: 2px; }
+
+.vega-message {
+  max-width: 90%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.vega-message-user {
+  background: linear-gradient(135deg, rgba(212, 21, 154, 0.2), rgba(136, 68, 232, 0.15));
+  border: 1px solid rgba(212, 21, 154, 0.3);
+  color: #fff;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.vega-message-ai {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #ccc;
+  align-self: flex-start;
+}
+
+.vega-thinking {
+  opacity: 0.6;
+  font-style: italic;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.vega-input-area {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px;
+  border-top: 1px solid rgba(212, 21, 154, 0.2);
+  background: rgba(255,255,255,0.02);
+}
+
+#vega-input {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 13px;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.4;
+  transition: border-color 0.2s;
+}
+
+#vega-input:focus {
+  border-color: rgba(212, 21, 154, 0.5);
+}
+
+#vega-input::placeholder { color: #555; }
+
+#vega-send {
+  background: linear-gradient(135deg, #D4159A, #8844E8);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  align-self: flex-end;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#vega-send:hover { opacity: 0.85; }
+
+.vega-footer {
+  padding: 8px 20px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.15);
+  text-align: center;
+  letter-spacing: 1px;
+}

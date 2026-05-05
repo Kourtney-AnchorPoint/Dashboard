@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "properties": {
+    "unit": {
+      "type": "string"
+    },
+    "cohesion_score": {
+      "type": "number"
+    },
+    "observation": {
+      "type": "string"
+    },
+    "observation_type": {
+      "type": "string",
+      "enum": [
+        "Positive \u2014 patients encouraging peers",
+        "Positive \u2014 strong group bonding",
+        "Neutral \u2014 stable group dynamic",
+        "Negative \u2014 conflict reported",
+        "Negative \u2014 clique behavior",
+        "Negative \u2014 floor mood contagion",
+        "Negative \u2014 smoking group high-risk cluster"
+      ]
+    },
+    "staff_name": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "affected_patients": {
+      "type": "string"
+    }
+  },
+  "required": [],
+  "name": "GroupCohesion"
+}

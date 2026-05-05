@@ -1,0 +1,1590 @@
+import { useState, useEffect } from "react";
+import { DemoLead } from "@/api/entities";
+
+const LOGO = "https://media.base44.com/images/public/69dabcfbdff2d23eb6ddb562/c3d5295ac_CensusGuard_banner_logo.png";
+const TIER_COLOR = { CRITICAL:"#D4159A", HIGH:"#ff6b35", MODERATE:"#f0c040", LOW:"#10D8F0" };
+const TIER_BG    = { CRITICAL:"#2a0018", HIGH:"#2a1400", MODERATE:"#252000", LOW:"#001c22" };
+const SUBSTANCE_MAP = {1:"Alcohol",2:"Opioid",3:"Benzodiazepine",4:"Methamphetamine",5:"Cocaine",6:"Non-rx Methadone",7:"Heroin",8:"Other"};
+
+
+function useIsMobile() {
+  const [mobile, setMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 640);
+  useEffect(() => {
+    const fn = () => setMobile(window.innerWidth < 640);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, []);
+  return mobile;
+}
+
+
+// ── Email Gate ─────────────────────────────────────────────────────────────────
+function EmailGate({ onUnlock }) {
+  const [form, setForm] = useState({ name: "", email: "", company: "", role: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim()) {
+      setError("Name and email are required.");
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(form.email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await DemoLead.create({
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
+        company: form.company.trim(),
+        role: form.role.trim(),
+        source: "demo_page"
+      });
+      onUnlock();
+    } catch (err) {
+      // Even if save fails, let them through — don't block the demo
+      onUnlock();
+    }
+  };
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      backgroundColor: "#07070F",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 24,
+      fontFamily: "'Inter', 'Helvetica Neue', sans-serif"
+    }}>
+      <div style={{ width: "100%", maxWidth: 480 }}>
+        {/* Logo */}
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <img src={LOGO} alt="AnchorPoint Health Systems" style={{ height: 48, marginBottom: 16 }} />
+          <div style={{ fontSize: 11, letterSpacing: 3, color: "#D4159A", fontWeight: 800, textTransform: "uppercase" }}>CensusGuard</div>
+        </div>
+
+        {/* Card */}
+        <div style={{
+          backgroundColor: "#0a0a18",
+          border: "1px solid #1a1a2e",
+          borderTop: "3px solid #D4159A",
+          borderRadius: 8,
+          padding: "40px 36px"
+        }}>
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#fff", marginBottom: 8 }}>
+            See the live demo
+          </div>
+          <div style={{ fontSize: 13, color: "#555", marginBottom: 28, lineHeight: 1.6 }}>
+            Enter your details to access the interactive CensusGuard dashboard — 18 real-time patient scenarios, risk scoring, and ROI calculator.
+          </div>
+          <div style={{ fontSize: 12, color: "#8844E8", backgroundColor: "#0d0a1a", border: "1px solid #1a1040", borderRadius: 4, padding: "10px 14px", marginBottom: 4, lineHeight: 1.6 }}>
+            🔒 We ask for your email so we can follow up with pricing, pilot availability, and answers to any questions you have after the demo. No spam — ever.
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            {[
+              { key: "name", label: "Full Name", placeholder: "Jane Smith", required: true },
+              { key: "email", label: "Work Email", placeholder: "jane@company.com", required: true },
+              { key: "company", label: "Organization", placeholder: "Treatment facility or health plan" },
+              { key: "role", label: "Your Role", placeholder: "Clinical Director, CFO, VP Innovation..." }
+            ].map(({ key, label, placeholder, required }) => (
+              <div key={key} style={{ marginBottom: 16 }}>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#888", letterSpacing: 1, marginBottom: 6 }}>
+                  {label.toUpperCase()}{required && <span style={{ color: "#D4159A" }}> *</span>}
+                </label>
+                <input
+                  type={key === "email" ? "email" : "text"}
+                  placeholder={placeholder}
+                  value={form[key]}
+                  onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                  style={{
+                    width: "100%",
+                    backgroundColor: "#07070F",
+                    border: "1px solid #1a1a2e",
+                    borderRadius: 4,
+                    padding: "12px 14px",
+                    color: "#fff",
+                    fontSize: 14,
+                    outline: "none",
+                    boxSizing: "border-box",
+                    transition: "border-color 0.2s"
+                  }}
+                  onFocus={e => e.target.style.borderColor = "#D4159A"}
+                  onBlur={e => e.target.style.borderColor = "#1a1a2e"}
+                />
+              </div>
+            ))}
+
+            {error && (
+              <div style={{ color: "#D4159A", fontSize: 12, marginBottom: 12 }}>{error}</div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: "100%",
+                backgroundColor: loading ? "#444" : "#D4159A",
+                border: "none",
+                borderRadius: 4,
+                color: "#fff",
+                fontSize: 14,
+                fontWeight: 800,
+                padding: "14px",
+                cursor: loading ? "not-allowed" : "pointer",
+                letterSpacing: 1,
+                marginTop: 8,
+                transition: "background-color 0.2s"
+              }}
+            >
+              {loading ? "Loading..." : "ACCESS LIVE DEMO →"}
+            </button>
+          </form>
+
+          <div style={{ fontSize: 10, color: "#333", textAlign: "center", marginTop: 16, lineHeight: 1.6 }}>
+            No spam. No sales pressure. We may follow up with information about CensusGuard.
+          </div>
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: 20, fontSize: 11, color: "#2a2a3e" }}>
+          AnchorPoint Health Systems · anchorpointhealthsystems.com
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const DEMO_PATIENTS = [
+  // DETOX
+  { id:"d1", name:"Sarah M.", unit:"Detox", room_number:"101", level_of_care:"Detox", risk_score:91, risk_tier:"CRITICAL", previous_risk_score:74, velocity:3.2, substance_encoded:6, length_of_stay:9, has_prior_tx:true, prior_tx_count:3, admission_number:3, calm_before_storm_flag:false, cliff_window:true, female_high_risk_sub:true, smoker:true, gender_encoded:1, court_referral:false, self_referral:true, pain_level_score:7, alert_active:true, alert_reason:"Female + Non-rx Methadone (55.4% dropout risk) · Day 9 cliff window · 3rd admission", top_drivers:"Non-rx Methadone|3rd Admission|Cliff Window|Daily Use|No Insurance", known_peers:"James T.", psych_comorbid:true, unstable_housing:true , last_bht_checkin:"2026-04-21T21:47:00" },
+  { id:"d2", name:"James T.", unit:"Detox", room_number:"101", level_of_care:"Detox", risk_score:78, risk_tier:"HIGH", previous_risk_score:81, velocity:-0.9, substance_encoded:4, length_of_stay:6, has_prior_tx:true, prior_tx_count:2, admission_number:2, calm_before_storm_flag:true, cliff_window:false, female_high_risk_sub:false, smoker:true, gender_encoded:0, court_referral:false, self_referral:false, pain_level_score:5, alert_active:true, alert_reason:"Calm-before-storm pattern detected · Known peer relationship with Sarah M.", top_drivers:"Methamphetamine|Calm-Before-Storm|2nd Admission|Unemployed|Criminal Justice", known_peers:"Sarah M.", psych_comorbid:false, unstable_housing:true , last_bht_checkin:"2026-04-21T21:47:00" },
+  { id:"d8", name:"Alicia J.", unit:"Detox", room_number:"103", level_of_care:"Detox", risk_score:55, risk_tier:"MODERATE", previous_risk_score:50, velocity:1.6, substance_encoded:7, length_of_stay:4, has_prior_tx:false, prior_tx_count:0, admission_number:1, calm_before_storm_flag:false, cliff_window:false, female_high_risk_sub:false, smoker:true, gender_encoded:1, court_referral:false, self_referral:true, pain_level_score:6, alert_active:false, alert_reason:"", top_drivers:"Heroin|IV Use|Unemployed|Pain Score 6/10", known_peers:"", psych_comorbid:false, unstable_housing:true , last_bht_checkin:"2026-04-21T21:15:00" },
+  { id:"d9", name:"Devon L.", unit:"Detox", room_number:"102", level_of_care:"Detox", risk_score:84, risk_tier:"CRITICAL", previous_risk_score:71, velocity:4.1, substance_encoded:2, length_of_stay:7, has_prior_tx:true, prior_tx_count:4, admission_number:4, calm_before_storm_flag:false, cliff_window:true, female_high_risk_sub:false, smoker:false, gender_encoded:0, court_referral:false, self_referral:false, pain_level_score:9, alert_active:true, alert_reason:"4th admission · Opioid + pain score 9/10 · Day 7 cliff window", top_drivers:"Opioid|4th Admission|Pain 9/10|Cliff Window|IV Use", known_peers:"", psych_comorbid:true, unstable_housing:true , last_bht_checkin:"2026-04-21T21:47:00" },
+  { id:"d10", name:"Brianna K.", unit:"Detox", room_number:"102", level_of_care:"Detox", risk_score:47, risk_tier:"MODERATE", previous_risk_score:44, velocity:0.8, substance_encoded:1, length_of_stay:3, has_prior_tx:false, prior_tx_count:0, admission_number:1, calm_before_storm_flag:false, cliff_window:false, female_high_risk_sub:false, smoker:false, gender_encoded:1, court_referral:false, self_referral:true, pain_level_score:3, alert_active:false, alert_reason:"", top_drivers:"Alcohol|Daily Use|Pregnant|No Insurance", known_peers:"", psych_comorbid:false, unstable_housing:false, pregnant_flag:true , last_bht_checkin:"2026-04-21T21:15:00" },
+  { id:"d11", name:"Terry F.", unit:"Detox", room_number:"104", level_of_care:"Detox", risk_score:69, risk_tier:"HIGH", previous_risk_score:62, velocity:2.3, substance_encoded:5, length_of_stay:5, has_prior_tx:true, prior_tx_count:1, admission_number:2, calm_before_storm_flag:false, cliff_window:false, female_high_risk_sub:false, smoker:true, gender_encoded:0, court_referral:true, self_referral:false, pain_level_score:4, alert_active:false, alert_reason:"", top_drivers:"Cocaine|Criminal Justice|2nd Admission|Unemployed", known_peers:"", psych_comorbid:false, unstable_housing:true , last_bht_checkin:"2026-04-21T21:00:00" },
+  // RESIDENTIAL
+  { id:"d3", name:"Marcus D.", unit:"Residential", room_number:"205", level_of_care:"Residential", risk_score:72, risk_tier:"HIGH", previous_risk_score:65, velocity:2.1, substance_encoded:2, length_of_stay:18, has_prior_tx:true, prior_tx_count:1, admission_number:2, calm_before_storm_flag:false, cliff_window:true, female_high_risk_sub:false, smoker:false, gender_encoded:0, court_referral:false, self_referral:true, pain_level_score:8, alert_active:true, alert_reason:"Day 18 residential cliff window · Opioid + high pain score (8/10)", top_drivers:"Opioid|Pain Score 8/10|Cliff Window|Psych Comorbidity|No Self-Help", known_peers:"", psych_comorbid:true, unstable_housing:false , last_bht_checkin:"2026-04-21T20:30:00" },
+  { id:"d4", name:"Destiny R.", unit:"Residential", room_number:"207", level_of_care:"Residential", risk_score:61, risk_tier:"MODERATE", previous_risk_score:58, velocity:1.0, substance_encoded:4, length_of_stay:14, has_prior_tx:false, prior_tx_count:0, admission_number:1, calm_before_storm_flag:false, cliff_window:false, female_high_risk_sub:false, smoker:false, gender_encoded:1, court_referral:false, self_referral:true, pain_level_score:3, alert_active:false, alert_reason:"", top_drivers:"Methamphetamine|Unemployed|No Self-Help|Unstable Housing", known_peers:"", psych_comorbid:false, unstable_housing:true , last_bht_checkin:"2026-04-21T20:30:00" },
+  { id:"d5", name:"Kevin P.", unit:"Residential", room_number:"205", level_of_care:"Residential", risk_score:44, risk_tier:"MODERATE", previous_risk_score:49, velocity:-1.5, substance_encoded:1, length_of_stay:22, has_prior_tx:false, prior_tx_count:0, admission_number:1, calm_before_storm_flag:false, cliff_window:false, female_high_risk_sub:false, smoker:false, gender_encoded:0, court_referral:true, self_referral:false, pain_level_score:2, alert_active:false, alert_reason:"", top_drivers:"Alcohol|Daily Use|Separated", known_peers:"", psych_comorbid:false, unstable_housing:false , last_bht_checkin:"2026-04-21T20:15:00" },
+  { id:"d12", name:"Lena V.", unit:"Residential", room_number:"206", level_of_care:"Residential", risk_score:80, risk_tier:"HIGH", previous_risk_score:75, velocity:1.6, substance_encoded:6, length_of_stay:16, has_prior_tx:true, prior_tx_count:2, admission_number:3, calm_before_storm_flag:false, cliff_window:true, female_high_risk_sub:true, smoker:false, gender_encoded:1, court_referral:false, self_referral:true, pain_level_score:5, alert_active:true, alert_reason:"Female + Non-rx Methadone · 3rd admission · Day 16 cliff window", top_drivers:"Non-rx Methadone|3rd Admission|Cliff Window|Female High-Risk", known_peers:"", psych_comorbid:true, unstable_housing:true , last_bht_checkin:"2026-04-21T20:30:00" },
+  { id:"d13", name:"Chris B.", unit:"Residential", room_number:"208", level_of_care:"Residential", risk_score:33, risk_tier:"LOW", previous_risk_score:38, velocity:-1.5, substance_encoded:1, length_of_stay:25, has_prior_tx:false, prior_tx_count:0, admission_number:1, calm_before_storm_flag:false, cliff_window:false, female_high_risk_sub:false, smoker:false, gender_encoded:0, court_referral:true, self_referral:false, pain_level_score:1, alert_active:false, alert_reason:"", top_drivers:"Alcohol|Court Referral (protective)|Employed Full-Time", known_peers:"", psych_comorbid:false, unstable_housing:false , last_bht_checkin:"2026-04-21T20:00:00" },
+  { id:"d14", name:"Monica H.", unit:"Residential", room_number:"209", level_of_care:"Residential", risk_score:57, risk_tier:"MODERATE", previous_risk_score:53, velocity:1.2, substance_encoded:3, length_of_stay:12, has_prior_tx:true, prior_tx_count:1, admission_number:2, calm_before_storm_flag:false, cliff_window:false, female_high_risk_sub:false, smoker:true, gender_encoded:1, court_referral:false, self_referral:true, pain_level_score:5, alert_active:false, alert_reason:"", top_drivers:"Benzodiazepine|Psych Comorbidity|2nd Admission|Divorced", known_peers:"", psych_comorbid:true, unstable_housing:false , last_bht_checkin:"2026-04-21T20:15:00" },
+  { id:"d15", name:"Andre W.", unit:"Residential", room_number:"210", level_of_care:"Residential", risk_score:76, risk_tier:"HIGH", previous_risk_score:68, velocity:2.5, substance_encoded:4, length_of_stay:20, has_prior_tx:true, prior_tx_count:2, admission_number:2, calm_before_storm_flag:true, cliff_window:true, female_high_risk_sub:false, smoker:true, gender_encoded:0, court_referral:false, self_referral:true, pain_level_score:6, alert_active:true, alert_reason:"Calm-before-storm + Day 20 cliff window · Methamphetamine 2nd admission", top_drivers:"Methamphetamine|Calm-Before-Storm|Cliff Window|2nd Admission|Smoker", known_peers:"Marcus D.", psych_comorbid:false, unstable_housing:true , last_bht_checkin:"2026-04-21T20:30:00" },
+  // PHP
+  { id:"d6", name:"Tanya W.", unit:"PHP", room_number:"310", level_of_care:"PHP", risk_score:38, risk_tier:"MODERATE", previous_risk_score:52, velocity:-4.2, substance_encoded:3, length_of_stay:36, has_prior_tx:true, prior_tx_count:1, admission_number:1, calm_before_storm_flag:false, cliff_window:false, female_high_risk_sub:false, smoker:false, gender_encoded:1, court_referral:false, self_referral:true, pain_level_score:4, alert_active:false, alert_reason:"", top_drivers:"Benzodiazepine|Psych Comorbidity", known_peers:"", psych_comorbid:true, unstable_housing:false , last_bht_checkin:"2026-04-21T19:00:00" },
+  { id:"d7", name:"Robert C.", unit:"PHP", room_number:"312", level_of_care:"PHP", risk_score:22, risk_tier:"LOW", previous_risk_score:28, velocity:-1.8, substance_encoded:1, length_of_stay:41, has_prior_tx:false, prior_tx_count:0, admission_number:1, calm_before_storm_flag:false, cliff_window:false, female_high_risk_sub:false, smoker:false, gender_encoded:0, court_referral:true, self_referral:false, pain_level_score:1, alert_active:false, alert_reason:"", top_drivers:"Alcohol|Court Referral (protective)", known_peers:"", psych_comorbid:false, unstable_housing:false , last_bht_checkin:"2026-04-21T19:00:00" },
+  { id:"d16", name:"Isaiah T.", unit:"PHP", room_number:"311", level_of_care:"PHP", risk_score:45, risk_tier:"MODERATE", previous_risk_score:58, velocity:-3.9, substance_encoded:2, length_of_stay:38, has_prior_tx:true, prior_tx_count:1, admission_number:1, calm_before_storm_flag:false, cliff_window:false, female_high_risk_sub:false, smoker:false, gender_encoded:0, court_referral:false, self_referral:true, pain_level_score:3, alert_active:false, alert_reason:"", top_drivers:"Opioid|Improving|MAT Compliance|Self-Help Active", known_peers:"", psych_comorbid:false, unstable_housing:false , last_bht_checkin:"2026-04-21T19:00:00" },
+  { id:"d17", name:"Priya N.", unit:"PHP", room_number:"313", level_of_care:"PHP", risk_score:29, risk_tier:"LOW", previous_risk_score:36, velocity:-2.1, substance_encoded:3, length_of_stay:44, has_prior_tx:false, prior_tx_count:0, admission_number:1, calm_before_storm_flag:false, cliff_window:false, female_high_risk_sub:false, smoker:false, gender_encoded:1, court_referral:false, self_referral:true, pain_level_score:2, alert_active:false, alert_reason:"", top_drivers:"Benzodiazepine|Improving|Employed|Strong Support System", known_peers:"", psych_comorbid:false, unstable_housing:false , last_bht_checkin:"2026-04-21T19:15:00" },
+  { id:"d18", name:"Ray G.", unit:"PHP", room_number:"310", level_of_care:"PHP", risk_score:63, risk_tier:"MODERATE", previous_risk_score:55, velocity:2.4, substance_encoded:4, length_of_stay:37, has_prior_tx:true, prior_tx_count:2, admission_number:2, calm_before_storm_flag:false, cliff_window:true, female_high_risk_sub:false, smoker:true, gender_encoded:0, court_referral:false, self_referral:false, pain_level_score:5, alert_active:true, alert_reason:"Day 37+ PHP cliff window · Methamphetamine 2nd admission · Rising velocity", top_drivers:"Methamphetamine|PHP Cliff Window|2nd Admission|Rising Score", known_peers:"", psych_comorbid:false, unstable_housing:true , last_bht_checkin:"2026-04-21T19:30:00" },
+];
+
+const DEMO_HISTORY = {
+  d1: [
+    { score:58, previous_score:null, risk_tier:"MODERATE", day:1, timestamp:"2026-04-03T08:00:00", trigger:"Admission intake", drivers:"Non-rx Methadone|Daily Use", alert_fired:false },
+    { score:67, previous_score:58, risk_tier:"HIGH", day:4, timestamp:"2026-04-06T09:15:00", trigger:"BHT check-in", drivers:"Non-rx Methadone|Unstable Housing|No Insurance", alert_fired:false },
+    { score:74, previous_score:67, risk_tier:"HIGH", day:7, timestamp:"2026-04-09T14:30:00", trigger:"BHT check-in", drivers:"Non-rx Methadone|3rd Admission|Cliff Window", alert_fired:true },
+    { score:91, previous_score:74, risk_tier:"CRITICAL", day:9, timestamp:"2026-04-11T11:00:00", trigger:"BHT check-in", drivers:"Non-rx Methadone|3rd Admission|Cliff Window|Daily Use|No Insurance", alert_fired:true },
+  ],
+  d2: [
+    { score:62, previous_score:null, risk_tier:"MODERATE", day:1, timestamp:"2026-04-06T08:00:00", trigger:"Admission intake", drivers:"Methamphetamine|Unemployed", alert_fired:false },
+    { score:81, previous_score:62, risk_tier:"HIGH", day:3, timestamp:"2026-04-08T10:00:00", trigger:"BHT check-in", drivers:"Methamphetamine|2nd Admission|Criminal Justice", alert_fired:true },
+    { score:78, previous_score:81, risk_tier:"HIGH", day:6, timestamp:"2026-04-11T16:00:00", trigger:"BHT check-in", drivers:"Methamphetamine|Calm-Before-Storm|2nd Admission", alert_fired:true },
+  ],
+  d3: [
+    { score:48, previous_score:null, risk_tier:"MODERATE", day:1, timestamp:"2026-03-25T08:00:00", trigger:"Admission intake", drivers:"Opioid|Pain Score", alert_fired:false },
+    { score:65, previous_score:48, risk_tier:"HIGH", day:10, timestamp:"2026-04-04T09:00:00", trigger:"BHT check-in", drivers:"Opioid|Pain Score 8/10|Psych Comorbidity", alert_fired:false },
+    { score:72, previous_score:65, risk_tier:"HIGH", day:18, timestamp:"2026-04-11T13:00:00", trigger:"BHT check-in", drivers:"Opioid|Pain Score 8/10|Cliff Window|No Self-Help", alert_fired:true },
+  ],
+  d4: [
+    { score:45, previous_score:null, risk_tier:"MODERATE", day:1, timestamp:"2026-03-30T08:00:00", trigger:"Admission intake", drivers:"Methamphetamine|Unemployed", alert_fired:false },
+    { score:58, previous_score:45, risk_tier:"MODERATE", day:7, timestamp:"2026-04-06T10:00:00", trigger:"BHT check-in", drivers:"Methamphetamine|Unstable Housing", alert_fired:false },
+    { score:61, previous_score:58, risk_tier:"MODERATE", day:14, timestamp:"2026-04-13T09:00:00", trigger:"BHT check-in", drivers:"Methamphetamine|Unemployed|No Self-Help", alert_fired:false },
+  ],
+  d5: [
+    { score:55, previous_score:null, risk_tier:"MODERATE", day:1, timestamp:"2026-03-22T08:00:00", trigger:"Admission intake", drivers:"Alcohol|Daily Use", alert_fired:false },
+    { score:49, previous_score:55, risk_tier:"MODERATE", day:10, timestamp:"2026-04-01T09:00:00", trigger:"BHT check-in", drivers:"Alcohol|Separated", alert_fired:false },
+    { score:44, previous_score:49, risk_tier:"MODERATE", day:22, timestamp:"2026-04-13T08:00:00", trigger:"BHT check-in", drivers:"Alcohol|Daily Use|Separated", alert_fired:false },
+  ],
+  d6: [
+    { score:68, previous_score:null, risk_tier:"HIGH", day:1, timestamp:"2026-03-08T08:00:00", trigger:"Admission intake", drivers:"Benzodiazepine|Psych Comorbidity", alert_fired:false },
+    { score:52, previous_score:68, risk_tier:"MODERATE", day:15, timestamp:"2026-03-23T09:00:00", trigger:"BHT check-in", drivers:"Benzodiazepine|Psych Comorbidity", alert_fired:false },
+    { score:38, previous_score:52, risk_tier:"MODERATE", day:36, timestamp:"2026-04-13T09:00:00", trigger:"BHT check-in", drivers:"Benzodiazepine|Psych Comorbidity", alert_fired:false },
+  ],
+  d7: [
+    { score:40, previous_score:null, risk_tier:"MODERATE", day:1, timestamp:"2026-03-03T08:00:00", trigger:"Admission intake", drivers:"Alcohol|Criminal Justice", alert_fired:false },
+    { score:28, previous_score:40, risk_tier:"LOW", day:20, timestamp:"2026-03-23T09:00:00", trigger:"BHT check-in", drivers:"Alcohol|Court Referral (protective)", alert_fired:false },
+    { score:22, previous_score:28, risk_tier:"LOW", day:41, timestamp:"2026-04-13T08:00:00", trigger:"BHT check-in", drivers:"Alcohol|Court Referral (protective)", alert_fired:false },
+  ],
+  d8: [
+    { score:42, previous_score:null, risk_tier:"MODERATE", day:1, timestamp:"2026-04-10T08:00:00", trigger:"Admission intake", drivers:"Heroin|IV Use", alert_fired:false },
+    { score:55, previous_score:42, risk_tier:"MODERATE", day:4, timestamp:"2026-04-13T09:00:00", trigger:"BHT check-in", drivers:"Heroin|IV Use|Unemployed|Pain Score 6/10", alert_fired:false },
+  ],
+};
+
+const DEMO_ACTIONS = {
+  d1: [
+    { action_type:"1:1 session scheduled", action_taken:"Scheduled emergency 1:1 with primary counselor after CRITICAL alert fired. Patient expressed ambivalence about continuing treatment.", staff_name:"T. Williams, LCDC", timestamp:"2026-04-11T12:30:00", score_at_action:91, follow_up_required:true, outcome_note:"Patient agreed to stay through weekend. Reassess Monday." },
+    { action_type:"Family notified", action_taken:"Called patient's sister per release of information. Requested family support call this evening.", staff_name:"J. Martinez, BHT", timestamp:"2026-04-11T13:00:00", score_at_action:91, follow_up_required:false, outcome_note:"Sister confirmed she will call at 7pm." },
+  ],
+  d2: [
+    { action_type:"BHT increased check-in frequency", action_taken:"Increased BHT rounds from hourly to every 30 min due to calm-before-storm pattern. Patient presenting as unusually calm after 3 days of high agitation.", staff_name:"R. Thompson, BHT", timestamp:"2026-04-11T17:00:00", score_at_action:78, follow_up_required:true, outcome_note:"Monitoring overnight." },
+  ],
+  d3: [
+    { action_type:"Medication review ordered", action_taken:"Requested MAT evaluation due to high pain score (8/10) and opioid history. Cliff window approaching — need pain management plan.", staff_name:"Dr. K. Patel", timestamp:"2026-04-11T14:00:00", score_at_action:72, follow_up_required:true, outcome_note:"MAT consult scheduled for tomorrow morning." },
+  ],
+};
+
+// ── SVG Donut Chart ────────────────────────────────────────────────────────────
+function DonutChart({ patients, size = 120 }) {
+  const tiers = ["CRITICAL","HIGH","MODERATE","LOW"];
+  const counts = tiers.map(t => patients.filter(p => p.risk_tier === t).length);
+  const total = patients.length || 1;
+  const r = 42, cx = size/2, cy = size/2, stroke = 18;
+  const circumference = 2 * Math.PI * r;
+
+  let offset = 0;
+  const segments = tiers.map((tier, i) => {
+    const pct = counts[i] / total;
+    const dash = pct * circumference;
+    const seg = { tier, count: counts[i], pct, dash, offset };
+    offset += dash;
+    return seg;
+  }).filter(s => s.count > 0);
+
+  return (
+    <div style={{position:"relative", width:size, height:size, flexShrink:0}}>
+      <svg width={size} height={size} style={{transform:"rotate(-90deg)"}}>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1a1a2e" strokeWidth={stroke}/>
+        {segments.map((s, i) => (
+          <circle key={i} cx={cx} cy={cy} r={r} fill="none"
+            stroke={TIER_COLOR[s.tier]} strokeWidth={stroke}
+            strokeDasharray={`${s.dash} ${circumference - s.dash}`}
+            strokeDashoffset={-s.offset}
+            strokeLinecap="butt"
+          />
+        ))}
+      </svg>
+      <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+        <div style={{fontSize:22,fontWeight:900,color:"#fff",lineHeight:1}}>{patients.length}</div>
+        <div style={{fontSize:9,color:"#555",letterSpacing:1}}>PTS</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Individual Score Line Chart ────────────────────────────────────────────────
+function ScoreLineChart({ patientId, patientName }) {
+  const history = DEMO_HISTORY[patientId] || [];
+  if (!history.length) return <div style={{color:"#444",fontSize:12,padding:20}}>No history available.</div>;
+
+  const W = 420, H = 140, padL = 36, padR = 16, padT = 12, padB = 28;
+  const maxDay = Math.max(...history.map(h => h.day), 1);
+  const xScale = d => padL + (d / maxDay) * (W - padL - padR);
+  const yScale = s => padT + ((100 - s) / 100) * (H - padT - padB);
+
+  const points = history.map(h => `${xScale(h.day)},${yScale(h.score)}`).join(" ");
+
+  // Risk zone bands
+  const zones = [
+    { min:75, max:100, color:"#D4159A", label:"CRITICAL" },
+    { min:50, max:75, color:"#ff6b35", label:"HIGH" },
+    { min:25, max:50, color:"#f0c040", label:"MOD" },
+    { min:0, max:25, color:"#10D8F0", label:"LOW" },
+  ];
+
+  return (
+    <div style={{overflowX:"auto"}}>
+      <svg width={W} height={H} style={{display:"block"}}>
+        {/* Zone bands */}
+        {zones.map(z => (
+          <rect key={z.label} x={padL} y={yScale(z.max)} width={W - padL - padR} height={yScale(z.min) - yScale(z.max)}
+            fill={z.color} fillOpacity={0.06}/>
+        ))}
+        {/* Grid lines */}
+        {[0,25,50,75,100].map(s => (
+          <g key={s}>
+            <line x1={padL} x2={W - padR} y1={yScale(s)} y2={yScale(s)} stroke="#1a1a2e" strokeDasharray="3,3"/>
+            <text x={padL - 4} y={yScale(s) + 4} fill="#444" fontSize={9} textAnchor="end">{s}</text>
+          </g>
+        ))}
+        {/* Day labels */}
+        {history.map(h => (
+          <text key={h.day} x={xScale(h.day)} y={H - 6} fill="#444" fontSize={9} textAnchor="middle">D{h.day}</text>
+        ))}
+        {/* Line */}
+        <polyline points={points} fill="none" stroke="#8844E8" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round"/>
+        {/* Alert dots */}
+        {history.map((h, i) => {
+          const c = TIER_COLOR[h.risk_tier] || "#555";
+          return (
+            <g key={i}>
+              <circle cx={xScale(h.day)} cy={yScale(h.score)} r={h.alert_fired ? 6 : 4} fill={c} stroke="#07070F" strokeWidth={1.5}/>
+              {h.alert_fired && <circle cx={xScale(h.day)} cy={yScale(h.score)} r={9} fill="none" stroke={c} strokeWidth={1} opacity={0.5}/>}
+              <text x={xScale(h.day)} y={yScale(h.score) - 10} fill={c} fontSize={10} fontWeight={700} textAnchor="middle">{h.score}</text>
+            </g>
+          );
+        })}
+      </svg>
+      <div style={{display:"flex",gap:12,flexWrap:"wrap",marginTop:6}}>
+        {zones.map(z => <span key={z.label} style={{fontSize:10,color:TIER_COLOR[z.label==="MOD"?"MODERATE":z.label],display:"flex",alignItems:"center",gap:4}}>
+          <span style={{width:8,height:8,borderRadius:"50%",backgroundColor:TIER_COLOR[z.label==="MOD"?"MODERATE":z.label],display:"inline-block"}}/>
+          {z.label}
+        </span>)}
+        <span style={{fontSize:10,color:"#555",marginLeft:"auto"}}>● = alert fired</span>
+      </div>
+    </div>
+  );
+}
+
+// ── Group Progress Flow (Sankey-style) ─────────────────────────────────────────
+function GroupRiskChart({ patients }) {
+  // Simulated group avg risk score over 14 days
+  const groupHistory = [
+    { day:1,  avg:52, critical:0, high:1, note:null },
+    { day:2,  avg:55, critical:0, high:1, note:null },
+    { day:3,  avg:58, critical:0, high:2, note:"James T. escalates" },
+    { day:4,  avg:61, critical:0, high:2, note:null },
+    { day:5,  avg:63, critical:0, high:2, note:null },
+    { day:6,  avg:65, critical:0, high:2, note:null },
+    { day:7,  avg:67, critical:1, high:2, note:"Sarah M. → CRITICAL" },
+    { day:8,  avg:70, critical:1, high:2, note:null },
+    { day:9,  avg:72, critical:1, high:2, note:"Cliff window: Detox" },
+    { day:10, avg:69, critical:1, high:2, note:"Intervention logged" },
+    { day:11, avg:66, critical:1, high:2, note:null },
+    { day:12, avg:64, critical:1, high:1, note:null },
+    { day:13, avg:62, critical:1, high:2, note:"Marcus D. escalates" },
+    { day:14, avg:64, critical:1, high:2, note:null },
+  ];
+
+  const W = 580, H = 180, padL = 40, padR = 16, padT = 16, padB = 32;
+  const maxDay = 14;
+  const xScale = d => padL + ((d - 1) / (maxDay - 1)) * (W - padL - padR);
+  const yScale = s => padT + ((100 - s) / 100) * (H - padT - padB);
+
+  const linePoints = groupHistory.map(h => `${xScale(h.day)},${yScale(h.avg)}`).join(" ");
+
+  // fill area under line
+  const areaPoints = [
+    `${xScale(1)},${H - padB}`,
+    ...groupHistory.map(h => `${xScale(h.day)},${yScale(h.avg)}`),
+    `${xScale(14)},${H - padB}`
+  ].join(" ");
+
+  return (
+    <div style={{backgroundColor:"#0a0a18",border:"1px solid #1a1a2e",borderRadius:4,padding:20,marginBottom:20}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
+        <div style={{fontSize:10,letterSpacing:2,color:"#444"}}>COHORT AVG RISK SCORE — 14-DAY TREND</div>
+        <div style={{display:"flex",gap:12,fontSize:10}}>
+          <span style={{color:"#D4159A"}}>● Avg Risk Score</span>
+          <span style={{color:"#ff6b35"}}>▲ Event</span>
+          <span style={{color:"#8844E822",border:"1px solid #8844E844",padding:"1px 6px",borderRadius:2,color:"#8844E8"}}>SIMULATED DATA</span>
+        </div>
+      </div>
+      <div style={{overflowX:"auto"}}>
+        <svg width={W} height={H} style={{display:"block",minWidth:W}}>
+          {/* Risk zone bands */}
+          {[
+            {min:75,max:100,color:"#D4159A",label:"CRITICAL"},
+            {min:50,max:75,color:"#ff6b35",label:"HIGH"},
+            {min:25,max:50,color:"#f0c040",label:"MOD"},
+            {min:0,max:25,color:"#10D8F0",label:"LOW"},
+          ].map(z => (
+            <rect key={z.label} x={padL} y={yScale(z.max)} width={W-padL-padR} height={yScale(z.min)-yScale(z.max)} fill={z.color} fillOpacity={0.04}/>
+          ))}
+          {/* Grid lines */}
+          {[0,25,50,75,100].map(s => (
+            <g key={s}>
+              <line x1={padL} x2={W-padR} y1={yScale(s)} y2={yScale(s)} stroke="#1a1a2e" strokeDasharray="3,3"/>
+              <text x={padL-4} y={yScale(s)+4} fill="#333" fontSize={9} textAnchor="end">{s}</text>
+            </g>
+          ))}
+          {/* Day labels */}
+          {groupHistory.filter((_,i)=>i%2===0).map(h => (
+            <text key={h.day} x={xScale(h.day)} y={H-8} fill="#333" fontSize={9} textAnchor="middle">D{h.day}</text>
+          ))}
+          {/* Area fill */}
+          <polygon points={areaPoints} fill="#8844E8" fillOpacity={0.07}/>
+          {/* Line */}
+          <polyline points={linePoints} fill="none" stroke="#8844E8" strokeWidth={2.5} strokeLinejoin="round" strokeLinecap="round"/>
+          {/* Event dots & notes */}
+          {groupHistory.map((h, i) => {
+            const hasNote = !!h.note;
+            const dotColor = h.critical > 0 ? "#D4159A" : h.high > 1 ? "#ff6b35" : "#8844E8";
+            return (
+              <g key={i}>
+                <circle cx={xScale(h.day)} cy={yScale(h.avg)} r={hasNote ? 6 : 3} fill={dotColor} stroke="#07070F" strokeWidth={1.5}/>
+                {hasNote && (
+                  <>
+                    <line x1={xScale(h.day)} y1={yScale(h.avg)-6} x2={xScale(h.day)} y2={yScale(h.avg)-22} stroke={dotColor} strokeWidth={1} strokeDasharray="2,2"/>
+                    <text x={xScale(h.day)} y={yScale(h.avg)-25} fill={dotColor} fontSize={8} textAnchor="middle" fontWeight={700}>{h.note}</text>
+                  </>
+                )}
+                <text x={xScale(h.day)} y={yScale(h.avg)+16} fill="#555" fontSize={8} textAnchor="middle">{h.avg}</text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+      {/* Critical/High count mini legend */}
+      <div style={{display:"flex",gap:16,marginTop:10,flexWrap:"wrap"}}>
+        {groupHistory.filter(h=>h.note).map(h=>(
+          <div key={h.day} style={{display:"flex",alignItems:"center",gap:6,fontSize:10,color:"#555"}}>
+            <span style={{color:"#ff6b35",fontWeight:700}}>D{h.day}</span>
+            <span>{h.note}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GroupProgressFlow({ patients }) {
+  const stages = ["Detox","Residential","PHP","Discharge"];
+  // count patients in each stage + simulated discharge
+  const counts = {
+    "Detox": patients.filter(p => p.unit === "Detox").length,
+    "Residential": patients.filter(p => p.unit === "Residential").length,
+    "PHP": patients.filter(p => p.unit === "PHP").length,
+    "Discharge": 3, // simulated completed
+  };
+  const maxCount = Math.max(...Object.values(counts), 1);
+  const W = 520, H = 160, nodeW = 80, gap = (W - stages.length * nodeW) / (stages.length - 1);
+
+  const stageColors = { "Detox":"#D4159A", "Residential":"#ff6b35", "PHP":"#8844E8", "Discharge":"#10D8F0" };
+
+  const nodes = stages.map((s, i) => ({
+    stage: s,
+    x: i * (nodeW + gap),
+    count: counts[s],
+    color: stageColors[s],
+    height: Math.max(20, (counts[s] / maxCount) * 100),
+  }));
+
+  // individual patient trajectories
+  const patientLines = [
+    { id:"d7", path:[{stage:"Detox",day:0},{stage:"Residential",day:7},{stage:"PHP",day:21},{stage:"Discharge",day:42}], color:"#10D8F0" , last_bht_checkin:"2026-04-21T19:00:00" },
+    { id:"d6", path:[{stage:"Detox",day:0},{stage:"Residential",day:7},{stage:"PHP",day:21}], color:"#8844E8" , last_bht_checkin:"2026-04-21T19:00:00" },
+    { id:"d3", path:[{stage:"Detox",day:0},{stage:"Residential",day:7}], color:"#ff6b35" , last_bht_checkin:"2026-04-21T20:30:00" },
+  ];
+
+  return (
+    <div>
+      <GroupRiskChart patients={patients}/>
+      <div style={{fontSize:10,letterSpacing:2,color:"#444",marginBottom:12}}>GROUP TREATMENT FLOW — COHORT PROGRESSION</div>
+      <div style={{overflowX:"auto",backgroundColor:"#0a0a18",borderRadius:4,padding:20,border:"1px solid #1a1a2e"}}>
+        <svg width={W} height={H} style={{display:"block",minWidth:W}}>
+          {/* Flow arrows between nodes */}
+          {nodes.slice(0,-1).map((n, i) => {
+            const next = nodes[i+1];
+            const y1 = (H - n.height) / 2 + n.height / 2;
+            const y2 = (H - next.height) / 2 + next.height / 2;
+            const x1 = n.x + nodeW;
+            const x2 = next.x;
+            const mx = (x1 + x2) / 2;
+            // flow band
+            const bandH1 = Math.min(n.height, next.height) * 0.6;
+            const top1 = y1 - bandH1/2, top2 = y2 - bandH1/2;
+            return (
+              <g key={i}>
+                <path d={`M ${x1} ${top1} C ${mx} ${top1}, ${mx} ${top2}, ${x2} ${top2} L ${x2} ${top2+bandH1} C ${mx} ${top2+bandH1}, ${mx} ${top1+bandH1}, ${x1} ${top1+bandH1} Z`}
+                  fill={n.color} fillOpacity={0.15}/>
+                <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={n.color} strokeOpacity={0.3} strokeWidth={1} strokeDasharray="4,4"/>
+              </g>
+            );
+          })}
+          {/* Node bars */}
+          {nodes.map(n => {
+            const y = (H - n.height) / 2;
+            return (
+              <g key={n.stage}>
+                <rect x={n.x} y={y} width={nodeW} height={n.height} rx={4} fill={n.color} fillOpacity={0.15} stroke={n.color} strokeWidth={1.5}/>
+                <text x={n.x + nodeW/2} y={y + n.height/2 - 8} fill={n.color} fontSize={22} fontWeight={900} textAnchor="middle">{n.count}</text>
+                <text x={n.x + nodeW/2} y={y + n.height/2 + 10} fill={n.color} fontSize={9} fontWeight={700} textAnchor="middle" letterSpacing={1}>{n.stage.toUpperCase()}</text>
+              </g>
+            );
+          })}
+        </svg>
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:8,paddingLeft:4,paddingRight:4}}>
+          {stages.map(s => (
+            <div key={s} style={{textAlign:"center",width:nodeW,fontSize:10,color:"#444"}}>
+              {s === "Discharge" ? "✓ Completed" : `${counts[s]} active`}
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Mini patient progress rows */}
+      <div style={{marginTop:16}}>
+        <div style={{fontSize:10,letterSpacing:2,color:"#444",marginBottom:10}}>INDIVIDUAL TREATMENT JOURNEYS</div>
+        {patients.map(p => {
+          const stageIdx = stages.indexOf(p.unit);
+          const c = TIER_COLOR[p.risk_tier];
+          return (
+            <div key={p.id} style={{display:"flex",alignItems:"center",gap:10,marginBottom:8,backgroundColor:"#0a0a18",borderRadius:3,padding:"8px 12px",border:"1px solid #1a1a2e"}}>
+              <div style={{width:80,fontSize:12,fontWeight:700,color:"#fff",flexShrink:0}}>{p.name}</div>
+              <div style={{flex:1,display:"flex",alignItems:"center",gap:0,position:"relative"}}>
+                {stages.map((s, i) => {
+                  const active = i === stageIdx;
+                  const done = i < stageIdx;
+                  const sc = stageColors[s];
+                  return (
+                    <div key={s} style={{display:"flex",alignItems:"center",flex:1}}>
+                      <div style={{
+                        width:24,height:24,borderRadius:"50%",
+                        backgroundColor: done ? sc+"44" : active ? sc : "#1a1a2e",
+                        border: `2px solid ${done||active ? sc : "#333"}`,
+                        display:"flex",alignItems:"center",justifyContent:"center",
+                        flexShrink:0,zIndex:1
+                      }}>
+                        {done && <span style={{fontSize:10,color:sc}}>✓</span>}
+                        {active && <span style={{fontSize:8,color:"#fff",fontWeight:900}}>●</span>}
+                      </div>
+                      {i < stages.length - 1 && <div style={{flex:1,height:2,backgroundColor: done ? sc+"44" : "#1a1a2e"}}/>}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0}}>
+                <span style={{fontSize:11,color:"#555"}}>Day {p.length_of_stay}</span>
+                <span style={{fontSize:16,fontWeight:900,color:c}}>{p.risk_score}</span>
+                <span style={{fontSize:9,fontWeight:800,color:c,border:`1px solid ${c}44`,padding:"1px 6px",borderRadius:2}}>{p.risk_tier}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Unit Detail Drill-Down ─────────────────────────────────────────────────────
+function UnitDrillDown({ unit, patients, onBack, onSelectPatient }) {
+  const unitPatients = patients.filter(p => p.unit === unit.name);
+  const cohesionColor = unit.cohesion >= 70 ? "#10D8F0" : unit.cohesion >= 50 ? "#f0c040" : "#D4159A";
+  const critical = unitPatients.filter(p=>p.risk_tier==="CRITICAL").length;
+  const high = unitPatients.filter(p=>p.risk_tier==="HIGH").length;
+  const avgScore = unitPatients.length ? Math.round(unitPatients.reduce((a,p)=>a+p.risk_score,0)/unitPatients.length) : 0;
+
+  return (
+    <div>
+      {/* Back button */}
+      <button onClick={onBack} style={{background:"none",border:"1px solid #2a2a3e",color:"#888",padding:"6px 16px",borderRadius:2,cursor:"pointer",fontSize:12,fontWeight:700,marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
+        ← All Units
+      </button>
+
+      {/* Unit title banner */}
+      <div style={{backgroundColor:unit.color+"15",border:`1px solid ${unit.color}44`,borderRadius:6,padding:"16px 24px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:16}}>
+        <div>
+          <div style={{fontSize:22,fontWeight:900,color:unit.color,letterSpacing:2}}>{unit.name.toUpperCase()}</div>
+          <div style={{fontSize:12,color:"#555",marginTop:2}}>
+            {unitPatients.length} / {unit.capacity} beds occupied
+            {unit.location && <span style={{marginLeft:8,color:"#444"}}>📍 {unit.location}</span>}
+          </div>
+        </div>
+        <div style={{display:"flex",gap:12,alignItems:"center",flexWrap:"wrap"}}>
+          <DonutChart patients={unitPatients} size={80}/>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            <div style={{display:"flex",gap:16}}>
+              {[["CRITICAL",critical,"#D4159A"],["HIGH RISK",high,"#ff6b35"],["AVG SCORE",avgScore,"#f0c040"]].map(([l,v,c])=>(
+                <div key={l} style={{textAlign:"center"}}>
+                  <div style={{fontSize:9,color:"#444",letterSpacing:1}}>{l}</div>
+                  <div style={{fontSize:22,fontWeight:900,color:c}}>{v}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{backgroundColor:"#07070F",border:`1px solid ${cohesionColor}33`,borderRadius:4,padding:"10px 16px",textAlign:"center",minWidth:90}}>
+            <div style={{fontSize:9,color:"#444",letterSpacing:2,marginBottom:4}}>COHESION</div>
+            <div style={{fontSize:28,fontWeight:900,color:cohesionColor,lineHeight:1}}>{unit.cohesion}</div>
+            <div style={{fontSize:10,color:unit.cohesionTrend>0?"#10D8F0":unit.cohesionTrend<0?"#D4159A":"#555",marginTop:4}}>
+              {unit.cohesionTrend>0?`▲ +${unit.cohesionTrend}`:unit.cohesionTrend<0?`▼ ${unit.cohesionTrend}`:"→ Stable"}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Patient table for this unit */}
+      <div style={{marginBottom:20}}>
+        <div style={{fontSize:10,letterSpacing:2,color:"#444",marginBottom:10}}>PATIENT ROSTER</div>
+        <div style={{overflowX:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+            <thead>
+              <tr style={{borderBottom:"1px solid #1a1a2e"}}>
+                {["Patient","Room","Day","Substance","Score","Tier","Velocity","Alerts"].map(h=>(
+                  <th key={h} style={{padding:"8px 12px",textAlign:"left",fontSize:10,color:"#444",letterSpacing:1,fontWeight:700,whiteSpace:"nowrap"}}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[...unitPatients].sort((a,b)=>b.risk_score-a.risk_score).map(p=>{
+                const c = TIER_COLOR[p.risk_tier]||"#555";
+                return (
+                  <tr key={p.id} onClick={()=>onSelectPatient(p)} style={{borderBottom:"1px solid #0d0d1a",cursor:"pointer"}}
+                    onMouseEnter={e=>e.currentTarget.style.backgroundColor="#0d0d1a"}
+                    onMouseLeave={e=>e.currentTarget.style.backgroundColor="transparent"}>
+                    <td style={{padding:"10px 12px",fontWeight:700,color:"#fff"}}>{p.name}</td>
+                    <td style={{padding:"10px 12px",color:"#555"}}>{p.room_number||"—"}</td>
+                    <td style={{padding:"10px 12px",color:"#888"}}>{p.length_of_stay}</td>
+                    <td style={{padding:"10px 12px",color:"#666",fontSize:11}}>{SUBSTANCE_MAP[p.substance_encoded]||"—"}</td>
+                    <td style={{padding:"10px 12px"}}><span style={{fontSize:22,fontWeight:900,color:c}}>{p.risk_score}</span></td>
+                    <td style={{padding:"10px 12px"}}><TierBadge tier={p.risk_tier}/></td>
+                    <td style={{padding:"10px 12px"}}><VelocityChip v={p.velocity}/></td>
+                    <td style={{padding:"10px 12px"}}>
+                      <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                        {p.alert_active&&<span style={{backgroundColor:"#D4159A22",color:"#D4159A",fontSize:10,padding:"2px 6px",borderRadius:2,fontWeight:700}}>🚨 ALERT</span>}
+                        {p.cliff_window&&<span style={{backgroundColor:"#f0c04022",color:"#f0c040",fontSize:10,padding:"2px 6px",borderRadius:2}}>CLIFF</span>}
+                        {p.calm_before_storm_flag&&<span style={{backgroundColor:"#8844E822",color:"#8844E8",fontSize:10,padding:"2px 6px",borderRadius:2}}>CBS</span>}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Floor map for this unit only */}
+      <div style={{fontSize:10,letterSpacing:2,color:"#444",marginBottom:10}}>FLOOR LAYOUT</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(150px,1fr))",gap:10,marginBottom:20}}>
+        {unit.rooms.map(room => {
+          const roomPatients = unitPatients.filter(p => p.room_number === room);
+          const isEmpty = roomPatients.length === 0;
+          const topTier = roomPatients.reduce((worst, p) => {
+            const order = {CRITICAL:0,HIGH:1,MODERATE:2,LOW:3};
+            return (order[p.risk_tier] < order[worst]) ? p.risk_tier : worst;
+          }, "LOW");
+          const bc = isEmpty ? "#1a1a2e" : TIER_COLOR[topTier];
+          const hasAlert = roomPatients.some(p => p.alert_active);
+          const hasPeerRisk = roomPatients.some(p => p.known_peers && roomPatients.some(r => r.name === p.known_peers));
+          const hasSmokers = roomPatients.filter(p=>p.smoker).length > 1;
+          return (
+            <div key={room} style={{backgroundColor: isEmpty?"#0d0d1a":bc+"11",border:`1px solid ${bc}`,borderRadius:4,padding:"12px 14px",minHeight:80,opacity:isEmpty?0.4:1,cursor:isEmpty?"default":"pointer"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                <span style={{fontSize:11,color:"#555",fontWeight:700,letterSpacing:1}}>ROOM {room}</span>
+                <div style={{display:"flex",gap:4}}>
+                  {hasAlert&&<span style={{fontSize:11}}>🚨</span>}
+                  {hasPeerRisk&&<span style={{fontSize:11}}>🔗</span>}
+                  {hasSmokers&&<span style={{fontSize:11}}>🚬</span>}
+                </div>
+              </div>
+              {isEmpty ? <div style={{fontSize:11,color:"#333",fontStyle:"italic"}}>Available</div> :
+                roomPatients.map(p=>{
+                  const c = TIER_COLOR[p.risk_tier];
+                  return (
+                    <div key={p.id} onClick={()=>onSelectPatient(p)} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+                      <div>
+                        <div style={{fontSize:12,fontWeight:700,color:"#fff"}}>{p.name}</div>
+                        <div style={{fontSize:10,color:"#555"}}>Day {p.length_of_stay}</div>
+                      </div>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:18,fontWeight:900,color:c}}>{p.risk_score}</div>
+                        <div style={{fontSize:8,color:c,fontWeight:800}}>{p.risk_tier}</div>
+                      </div>
+                    </div>
+                  );
+                })
+              }
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Unit-specific cohesion alerts */}
+      {unit.name === "Detox" && (
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          <div style={{backgroundColor:"#1a0800",border:"1px solid #ff6b3555",borderLeft:"3px solid #ff6b35",borderRadius:3,padding:"10px 14px",fontSize:11}}>
+            <span style={{color:"#ff6b35",fontWeight:800}}>⚠ ROOM 101 — HIGH-RISK PEER PROXIMITY </span>
+            <span style={{color:"#888"}}>Sarah M. (CRITICAL) + James T. (HIGH). Known prior relationship. Monitor daily.</span>
+          </div>
+          <div style={{backgroundColor:"#1a1000",border:"1px solid #f0c04055",borderLeft:"3px solid #f0c040",borderRadius:3,padding:"10px 14px",fontSize:11}}>
+            <span style={{color:"#f0c040",fontWeight:800}}>🚬 SMOKER CLUSTER </span>
+            <span style={{color:"#888"}}>Sarah M., James T., Alicia J. all smokers at HIGH/CRITICAL tier. Consider staggered break schedules.</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Census Floor Map ───────────────────────────────────────────────────────────
+function CensusFloorMap({ patients, onSelectPatient }) {
+  const [drillUnit, setDrillUnit] = useState(null);
+  const units = [
+    { name:"Detox", rooms:["101","102","103","104"], capacity:8, cohesion:58, cohesionTrend:-4, color:"#D4159A", location:"Building A" },
+    { name:"Residential", rooms:["205","206","207","208","209","210"], capacity:12, cohesion:72, cohesionTrend:3, color:"#ff6b35", location:"Building B" },
+    { name:"PHP", rooms:["310","311","312","313"], capacity:8, cohesion:81, cohesionTrend:6, color:"#8844E8", location:"Building C" },
+  ];
+
+  if (drillUnit) {
+    return <UnitDrillDown unit={drillUnit} patients={patients} onBack={()=>setDrillUnit(null)} onSelectPatient={onSelectPatient}/>;
+  }
+
+  return (
+    <div style={{display:"flex",flexDirection:"column",gap:20}}>
+      {units.map(unit => {
+        const unitPatients = patients.filter(p => p.unit === unit.name);
+        const cohesionColor = unit.cohesion >= 70 ? "#10D8F0" : unit.cohesion >= 50 ? "#f0c040" : "#D4159A";
+
+        return (
+          <div key={unit.name} style={{backgroundColor:"#0a0a18",border:`1px solid ${unit.color}33`,borderRadius:6,overflow:"hidden"}}>
+            {/* Unit Header */}
+            <div onClick={()=>setDrillUnit(unit)} style={{backgroundColor:unit.color+"15",borderBottom:`1px solid ${unit.color}33`,padding:"12px 20px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,cursor:"pointer"}} onMouseEnter={e=>e.currentTarget.style.backgroundColor=unit.color+"25"} onMouseLeave={e=>e.currentTarget.style.backgroundColor=unit.color+"15"}>
+              <div style={{display:"flex",alignItems:"center",gap:16}}>
+                <div>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{fontSize:14,fontWeight:900,color:unit.color,letterSpacing:1}}>{unit.name.toUpperCase()}</div>
+                    <span style={{fontSize:10,color:unit.color,opacity:0.7,border:`1px solid ${unit.color}44`,padding:"2px 8px",borderRadius:2,letterSpacing:1}}>VIEW UNIT →</span>
+                  </div>
+                  <div style={{fontSize:11,color:"#555"}}>{unitPatients.length} / {unit.capacity} beds occupied · 📍 {unit.location}</div>
+                </div>
+                {/* Donut */}
+                <DonutChart patients={unitPatients} size={72}/>
+                {/* Tier legend */}
+                <div style={{display:"flex",flexDirection:"column",gap:3}}>
+                  {["CRITICAL","HIGH","MODERATE","LOW"].map(t => {
+                    const n = unitPatients.filter(p=>p.risk_tier===t).length;
+                    if (!n) return null;
+                    return <div key={t} style={{display:"flex",alignItems:"center",gap:5,fontSize:10}}>
+                      <span style={{width:8,height:8,borderRadius:"50%",backgroundColor:TIER_COLOR[t],display:"inline-block",flexShrink:0}}/>
+                      <span style={{color:TIER_COLOR[t],fontWeight:700}}>{n}</span>
+                      <span style={{color:"#444"}}>{t}</span>
+                    </div>;
+                  })}
+                </div>
+              </div>
+              {/* Cohesion Score */}
+              <div style={{backgroundColor:"#07070F",border:`1px solid ${cohesionColor}33`,borderRadius:4,padding:"10px 16px",textAlign:"center",minWidth:100}}>
+                <div style={{fontSize:9,color:"#444",letterSpacing:2,marginBottom:4}}>GROUP COHESION</div>
+                <div style={{fontSize:28,fontWeight:900,color:cohesionColor,lineHeight:1}}>{unit.cohesion}</div>
+                <div style={{fontSize:10,color:unit.cohesionTrend>0?"#10D8F0":unit.cohesionTrend<0?"#D4159A":"#555",marginTop:4}}>
+                  {unit.cohesionTrend>0?`▲ +${unit.cohesionTrend}`:unit.cohesionTrend<0?`▼ ${unit.cohesionTrend}`:"→ Stable"}
+                </div>
+                <div style={{marginTop:6,backgroundColor:"#1a1a2e",borderRadius:2,height:3}}>
+                  <div style={{backgroundColor:cohesionColor,height:3,borderRadius:2,width:`${unit.cohesion}%`}}/>
+                </div>
+              </div>
+            </div>
+
+            {/* Room Grid */}
+            <div style={{padding:16}}>
+              <div style={{fontSize:9,color:"#444",letterSpacing:2,marginBottom:10}}>FLOOR LAYOUT</div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:8}}>
+                {unit.rooms.map(room => {
+                  const roomPatients = unitPatients.filter(p => p.room_number === room);
+                  const isEmpty = roomPatients.length === 0;
+                  const topTier = roomPatients.reduce((worst, p) => {
+                    const order = {CRITICAL:0,HIGH:1,MODERATE:2,LOW:3};
+                    return (order[p.risk_tier] < order[worst]) ? p.risk_tier : worst;
+                  }, "LOW");
+                  const bc = isEmpty ? "#1a1a2e" : TIER_COLOR[topTier];
+                  const hasAlert = roomPatients.some(p => p.alert_active);
+                  const hasPeerRisk = roomPatients.some(p => p.known_peers && roomPatients.some(r => r.name === p.known_peers));
+                  const hasSmokers = roomPatients.filter(p=>p.smoker).length > 1;
+
+                  return (
+                    <div key={room} style={{
+                      backgroundColor: isEmpty ? "#0d0d1a" : bc+"11",
+                      border: `1px solid ${bc}`,
+                      borderRadius:4, padding:"10px 12px", cursor: isEmpty ? "default" : "pointer",
+                      position:"relative", minHeight:70,
+                      opacity: isEmpty ? 0.4 : 1,
+                    }}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                        <span style={{fontSize:10,color:"#555",fontWeight:700,letterSpacing:1}}>ROOM {room}</span>
+                        <div style={{display:"flex",gap:4}}>
+                          {hasAlert && <span title="Active alert" style={{fontSize:10}}>🚨</span>}
+                          {hasPeerRisk && <span title="Known peer relationship" style={{fontSize:10}}>🔗</span>}
+                          {hasSmokers && <span title="Smoker cluster" style={{fontSize:10}}>🚬</span>}
+                        </div>
+                      </div>
+                      {isEmpty ? (
+                        <div style={{fontSize:11,color:"#333",fontStyle:"italic"}}>Available</div>
+                      ) : (
+                        roomPatients.map(p => {
+                          const c = TIER_COLOR[p.risk_tier];
+                          return (
+                            <div key={p.id} onClick={() => onSelectPatient(p)}
+                              style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4,cursor:"pointer"}}>
+                              <div>
+                                <div style={{fontSize:12,fontWeight:700,color:"#fff"}}>{p.name}</div>
+                                <div style={{fontSize:10,color:"#555"}}>Day {p.length_of_stay}</div>
+                              </div>
+                              <div style={{textAlign:"right"}}>
+                                <div style={{fontSize:18,fontWeight:900,color:c}}>{p.risk_score}</div>
+                                <div style={{fontSize:8,color:c,fontWeight:800,letterSpacing:1}}>{p.risk_tier}</div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Cohesion Alerts for this unit */}
+            {unit.name === "Detox" && (
+              <div style={{borderTop:"1px solid #1a1a2e",padding:"10px 16px",display:"flex",flexDirection:"column",gap:6}}>
+                <div style={{backgroundColor:"#1a0800",border:"1px solid #ff6b3555",borderLeft:"3px solid #ff6b35",borderRadius:3,padding:"8px 12px",fontSize:11}}>
+                  <span style={{color:"#ff6b35",fontWeight:800}}>⚠ ROOM 101 — HIGH-RISK PEER PROXIMITY </span>
+                  <span style={{color:"#888"}}>Sarah M. (CRITICAL) + James T. (HIGH). Known prior relationship. Monitor daily.</span>
+                </div>
+                <div style={{backgroundColor:"#1a1000",border:"1px solid #f0c04055",borderLeft:"3px solid #f0c040",borderRadius:3,padding:"8px 12px",fontSize:11}}>
+                  <span style={{color:"#f0c040",fontWeight:800}}>🚬 SMOKER CLUSTER </span>
+                  <span style={{color:"#888"}}>Sarah M., James T., Alicia J. all smokers at HIGH/CRITICAL tier. Consider staggered break schedules.</span>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+
+// ── Search Bar ─────────────────────────────────────────────────────────────────
+function SearchBar({ patients, onSelect }) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const results = query.length > 1 ? patients.filter(p => p.name.toLowerCase().includes(query.toLowerCase())) : [];
+  return (
+    <div style={{position:"relative",width:240}}>
+      <div style={{display:"flex",alignItems:"center",backgroundColor:"#0d0d1a",border:"1px solid #2a2a3e",borderRadius:3,padding:"6px 12px",gap:8}}>
+        <span style={{color:"#444",fontSize:14}}>🔍</span>
+        <input value={query} onChange={e=>{setQuery(e.target.value);setOpen(true);}} onFocus={()=>setOpen(true)} onBlur={()=>setTimeout(()=>setOpen(false),200)} placeholder="Search patient..." style={{background:"none",border:"none",outline:"none",color:"#fff",fontSize:12,width:"100%"}}/>
+        {query && <span onClick={()=>{setQuery("");setOpen(false);}} style={{color:"#444",cursor:"pointer",fontSize:16}}>×</span>}
+      </div>
+      {open && results.length>0 && (
+        <div style={{position:"absolute",top:"100%",left:0,right:0,backgroundColor:"#0d0d1a",border:"1px solid #2a2a3e",borderRadius:3,zIndex:100,marginTop:2,overflow:"hidden"}}>
+          {results.map(p=>{
+            const c=TIER_COLOR[p.risk_tier]||"#555";
+            return (
+              <div key={p.id} onClick={()=>{onSelect(p);setQuery("");setOpen(false);}} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 14px",cursor:"pointer",borderBottom:"1px solid #111"}} onMouseEnter={e=>e.currentTarget.style.background="#1a1a2e"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                <div>
+                  <div style={{fontWeight:700,color:"#fff",fontSize:12}}>{p.name}</div>
+                  <div style={{fontSize:10,color:"#555"}}>Day {p.length_of_stay} · {p.unit} · Room {p.room_number||"—"}</div>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:3}}>
+                  <span style={{fontSize:18,fontWeight:900,color:c}}>{p.risk_score}</span>
+                  <span style={{backgroundColor:c+"22",color:c,border:`1px solid ${c}44`,fontSize:9,fontWeight:800,padding:"1px 6px",borderRadius:2}}>{p.risk_tier}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {open && query.length>1 && results.length===0 && (
+        <div style={{position:"absolute",top:"100%",left:0,right:0,backgroundColor:"#0d0d1a",border:"1px solid #2a2a3e",borderRadius:3,zIndex:100,marginTop:2,padding:"12px 14px",color:"#555",fontSize:12}}>No patients found</div>
+      )}
+    </div>
+  );
+}
+
+// ── TierBadge ──────────────────────────────────────────────────────────────────
+function TierBadge({ tier }) {
+  const c = TIER_COLOR[tier]||"#555";
+  return <span style={{background:c+"22",color:c,border:`1px solid ${c}44`,fontSize:10,fontWeight:800,padding:"2px 8px",borderRadius:2,letterSpacing:1,whiteSpace:"nowrap"}}>{tier}</span>;
+}
+
+function VelocityChip({ v }) {
+  if (!v && v!==0) return <span style={{color:"#444"}}>—</span>;
+  const up = v>0;
+  return <span style={{color:up?"#D4159A":"#10D8F0",fontWeight:700,fontSize:12}}>{up?"▲":"▼"} {Math.abs(v).toFixed(1)}/d</span>;
+}
+
+function MiniSparkline({ up }) {
+  const pts = up ? "0,28 10,24 20,26 30,20 40,18 50,12 60,8" : "0,8 10,12 20,10 30,14 40,18 50,20 60,22";
+  return <svg width={62} height={32} viewBox="0 0 62 32"><polyline points={pts} fill="none" stroke={up?"#D4159A":"#10D8F0"} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/><circle cx={60} cy={up?8:22} r={3} fill={up?"#D4159A":"#10D8F0"}/></svg>;
+}
+
+// ── Patient Detail Panel ───────────────────────────────────────────────────────
+function PatientDetail({ patient, onClose }) {
+  const [tab, setTab] = useState("overview");
+  const history = DEMO_HISTORY[patient.id] || [];
+  const actions = DEMO_ACTIONS[patient.id] || [];
+  const c = TIER_COLOR[patient.risk_tier]||"#555";
+  const drivers = patient.top_drivers ? patient.top_drivers.split("|") : [];
+
+  return (
+    <div style={{backgroundColor:"#0a0a18",border:`1px solid ${c}44`,borderRadius:6,padding:20,marginTop:16}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16,flexWrap:"wrap",gap:12}}>
+        <div>
+          <div style={{fontSize:18,fontWeight:900,color:"#fff"}}>{patient.name}</div>
+          <div style={{fontSize:11,color:"#555",marginTop:2}}>Day {patient.length_of_stay} · {patient.level_of_care} · Room {patient.room_number||"—"} · {SUBSTANCE_MAP[patient.substance_encoded]||"Unknown"}</div>
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:12}}>
+          <div style={{textAlign:"right"}}>
+            <div style={{fontSize:40,fontWeight:900,color:c,lineHeight:1}}>{patient.risk_score}</div>
+            <TierBadge tier={patient.risk_tier}/>
+          </div>
+          <button onClick={onClose} style={{background:"none",border:"1px solid #2a2a3e",color:"#555",width:28,height:28,borderRadius:"50%",cursor:"pointer",fontSize:16,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+        </div>
+      </div>
+
+      {patient.alert_active && (
+        <div style={{backgroundColor:"#2a0018",border:"1px solid #D4159A44",borderLeft:"3px solid #D4159A",borderRadius:3,padding:"10px 14px",marginBottom:14,fontSize:12,color:"#D4159A"}}>
+          🚨 {patient.alert_reason}
+        </div>
+      )}
+
+      <div style={{display:"flex",gap:0,marginBottom:16,borderBottom:"1px solid #1a1a2e"}}>
+        {[["overview","Overview"],["trajectory","Score Trajectory"],["history","History"],["audit","Audit Trail"]].map(([t,label])=>(
+          <button key={t} onClick={()=>setTab(t)} style={{background:"none",border:"none",borderBottom:tab===t?"2px solid #D4159A":"2px solid transparent",color:tab===t?"#D4159A":"#555",padding:"8px 16px",cursor:"pointer",fontSize:12,fontWeight:700,letterSpacing:1,marginBottom:-1}}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab==="overview" && (
+        <div>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:14}}>
+            {drivers.map((d,i)=><span key={i} style={{backgroundColor:"#D4159A22",color:"#D4159A",fontSize:11,padding:"3px 10px",borderRadius:2,fontWeight:700}}>{d}</span>)}
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:8}}>
+            {[
+              ["Velocity", <VelocityChip v={patient.velocity}/>],
+              ["Admission #", patient.admission_number||1],
+              ["Prior Tx", patient.has_prior_tx ? `Yes (${patient.prior_tx_count}x)` : "No"],
+              ["Substance", SUBSTANCE_MAP[patient.substance_encoded]||"—"],
+              ["Pain Score", patient.pain_level_score ? `${patient.pain_level_score}/10` : "—"],
+              ["Psych Comorbid", patient.psych_comorbid ? "Yes" : "No"],
+              ["Unstable Housing", patient.unstable_housing ? "Yes" : "No"],
+              ["Cliff Window", patient.cliff_window ? "⚠ Active" : "No"],
+              ["Known Peer", patient.known_peers||"—"],
+              ["Smoker", patient.smoker ? "Yes 🚬" : "No"],
+              ["Court Referral", patient.court_referral ? "Yes" : "No"],
+              ["Room", patient.room_number||"—"],
+            ].map(([l,v])=>(
+              <div key={l} style={{backgroundColor:"#0d0d1a",border:"1px solid #1a1a2e",borderRadius:3,padding:"8px 12px"}}>
+                <div style={{fontSize:10,color:"#444",letterSpacing:1,marginBottom:3}}>{String(l).toUpperCase()}</div>
+                <div style={{color:"#fff",fontWeight:700,fontSize:13}}>{v}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {tab==="trajectory" && (
+        <div>
+          <div style={{fontSize:10,letterSpacing:2,color:"#444",marginBottom:12}}>INDIVIDUAL RISK SCORE TRAJECTORY</div>
+          <ScoreLineChart patientId={patient.id} patientName={patient.name}/>
+        </div>
+      )}
+
+      {tab==="history" && (
+        <div>
+          <div style={{fontSize:10,letterSpacing:2,color:"#444",marginBottom:14}}>RISK SCORE HISTORY</div>
+          {!history.length && <div style={{color:"#444",fontSize:12}}>No history recorded.</div>}
+          <div style={{position:"relative"}}>
+            <div style={{position:"absolute",left:16,top:0,bottom:0,width:2,backgroundColor:"#1a1a2e"}}/>
+            {[...history].reverse().map((h,i)=>{
+              const hc = TIER_COLOR[h.risk_tier]||"#555";
+              const delta = h.previous_score ? h.score - h.previous_score : 0;
+              const driverList = h.drivers ? h.drivers.split("|") : [];
+              return (
+                <div key={i} style={{position:"relative",paddingLeft:40,paddingBottom:20}}>
+                  <div style={{position:"absolute",left:8,top:4,width:18,height:18,borderRadius:"50%",backgroundColor:h.alert_fired?"#D4159A":"#1a1a2e",border:`2px solid ${hc}`,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    {h.alert_fired && <span style={{fontSize:8,color:"#fff"}}>!</span>}
+                  </div>
+                  <div style={{backgroundColor:"#0a0a18",border:`1px solid ${h.alert_fired?"#D4159A33":"#1a1a2e"}`,borderRadius:4,padding:"10px 14px"}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6,flexWrap:"wrap",gap:4}}>
+                      <div style={{display:"flex",alignItems:"center",gap:10}}>
+                        <span style={{fontSize:24,fontWeight:900,color:hc}}>{h.score}</span>
+                        {delta!==0&&<span style={{fontSize:12,fontWeight:700,color:delta>0?"#D4159A":"#10D8F0"}}>{delta>0?`+${delta}`:delta} pts</span>}
+                        <TierBadge tier={h.risk_tier}/>
+                      </div>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:11,color:"#555"}}>Day {h.day}</div>
+                        <div style={{fontSize:10,color:"#333"}}>{new Date(h.timestamp).toLocaleString()}</div>
+                      </div>
+                    </div>
+                    <div style={{fontSize:12,color:"#888",marginBottom:6}}>
+                      <span style={{color:"#555"}}>Trigger: </span>
+                      <span style={{color: h.trigger==="BHT check-in" ? "#10D8F0" : "#888", fontWeight: h.trigger==="BHT check-in" ? 700 : 400}}>
+                        {h.trigger === "BHT check-in" ? "⚡ BHT check-in (real-time rescore)" : h.trigger}
+                      </span>
+                    </div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:4}}>
+                      {driverList.map((d,j)=><span key={j} style={{backgroundColor:"#1a1a2e",color:"#888",fontSize:11,padding:"2px 8px",borderRadius:2}}>{d}</span>)}
+                    </div>
+                    {h.alert_fired && <div style={{marginTop:6,fontSize:11,color:"#D4159A",fontWeight:700}}>🚨 Alert fired</div>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {tab==="audit" && (
+        <div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+            <div style={{fontSize:10,letterSpacing:2,color:"#444"}}>CLINICAL AUDIT TRAIL</div>
+            <span style={{fontSize:11,color:"#555",fontStyle:"italic"}}>Demo mode — read-only</span>
+          </div>
+          {!actions.length && <div style={{color:"#444",fontSize:12}}>No clinical actions logged yet.</div>}
+          {actions.map((a,i)=>(
+            <div key={i} style={{backgroundColor:"#0a0a18",border:"1px solid #1a1a2e",borderRadius:4,padding:"12px 14px",marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6,flexWrap:"wrap",gap:4}}>
+                <div>
+                  <span style={{backgroundColor:"#D4159A22",color:"#D4159A",fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:2}}>{a.action_type}</span>
+                  {a.follow_up_required && <span style={{marginLeft:6,backgroundColor:"#f0c04022",color:"#f0c040",fontSize:10,padding:"2px 6px",borderRadius:2}}>Follow-up needed</span>}
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{fontSize:11,color:"#666"}}>{a.staff_name}</div>
+                  <div style={{fontSize:10,color:"#333"}}>{new Date(a.timestamp).toLocaleString()}</div>
+                </div>
+              </div>
+              <div style={{fontSize:12,color:"#ccc",lineHeight:1.6,marginBottom:6}}>{a.action_taken}</div>
+              {a.outcome_note && <div style={{fontSize:12,color:"#666",fontStyle:"italic"}}>→ {a.outcome_note}</div>}
+              <div style={{fontSize:11,color:"#444",marginTop:6}}>Score at action: <span style={{color:TIER_COLOR["HIGH"]}}>{a.score_at_action}</span></div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+const DEMO_NARRATIVES = [
+  { id:"n1", unit:"Detox", observation_type:"Conflict", staff_name:"BHT Rivera", timestamp:"2026-04-21T12:35:00", observation:"James T. and Devon L. had a conflict at lunch — raised voices over seat assignment. Staff intervened immediately. Both patients separated for the remainder of the meal. Group cohesion score dropped 4 points following the incident. Counselor notified.", cohesion_score:62 },
+  { id:"n2", unit:"Residential", observation_type:"Positive", staff_name:"Counselor Williams", timestamp:"2026-04-21T10:15:00", observation:"Morning group went exceptionally well. Patients encouraged each other throughout the session. Andre W. shared a breakthrough moment about his relationship with his son. Marcus D. provided peer support without prompting — first time since admission. Group energy was high and focused.", cohesion_score:81 },
+  { id:"n3", unit:"PHP", observation_type:"Group Milestone", staff_name:"Counselor Kim", timestamp:"2026-04-21T09:00:00", observation:"PHP cohort celebrated Robert C. reaching Day 41 — his longest period of sustained recovery. Group gave a standing ovation. Tanya W. visibly emotional — positive peer modeling moment. Cohesion strongest it's been this month.", cohesion_score:90 },
+  { id:"n4", unit:"Detox", observation_type:"Warning", staff_name:"BHT Santos", timestamp:"2026-04-20T20:10:00", observation:"Sarah M. declined evening group participation. Said she was tired but staff noted elevated agitation during vitals. Known peer James T. was pacing hallway at same time. Counselor on-call notified. Score monitoring increased to every check-in.", cohesion_score:55 },
+  { id:"n6", unit:"Detox", observation_type:"Alert", staff_name:"BHT Rivera", timestamp:"2026-04-21T21:47:00", observation:"BHT evening rounds completed — Detox unit. James T. rescored to HIGH following check-in at 9:47 PM. CensusGuard alert fired automatically. Score jumped +7 pts from previous check-in. On-call counselor paged. Patient located in common area, appeared withdrawn. 1:1 initiated within 4 minutes of alert.", cohesion_score:58 },
+  { id:"n5", unit:"Residential", observation_type:"Clinical Note", staff_name:"Nurse Thompson", timestamp:"2026-04-20T14:30:00", observation:"Lena V. requested an early 1:1 with her counselor. Disclosed increased cravings tied to family phone call this morning. Counselor met same day. Craving intensity documented as 7/10. Crisis plan reviewed and updated. Family contact flagged as potential trigger.", cohesion_score:null },
+];
+
+// ── Group Narrative (Demo) ────────────────────────────────────────────────────
+function GroupNarrativeDemo() {
+  const typeColor = {
+    "Conflict":"#D4159A","Clinical Note":"#10D8F0","Positive":"#10D8F0",
+    "Group Milestone":"#8844E8","Cohesion Drop":"#ff6b35","Warning":"#f0c040"
+  };
+  return (
+    <div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <div style={{fontSize:10,letterSpacing:2,color:"#444"}}>DAILY GROUP NARRATIVE</div>
+        <span style={{fontSize:11,color:"#555",fontStyle:"italic"}}>Demo mode — read-only</span>
+      </div>
+      <div style={{backgroundColor:"#071a10",border:"1px solid #10D8F033",borderRadius:4,padding:"10px 16px",marginBottom:16,fontSize:12,color:"#10D8F0"}}>
+        📋 In live mode, clinical staff log group observations in real time. CensusGuard tracks cohesion scores and flags emerging conflicts before they escalate.
+      </div>
+      {DEMO_NARRATIVES.map((n,i)=>{
+        const tc = typeColor[n.observation_type]||"#555";
+        return (
+          <div key={n.id} style={{backgroundColor:"#0a0a18",border:`1px solid ${tc}33`,borderLeft:`3px solid ${tc}`,borderRadius:4,padding:"14px 18px",marginBottom:10}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8,flexWrap:"wrap",gap:6}}>
+              <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+                <span style={{backgroundColor:tc+"22",color:tc,fontSize:10,fontWeight:800,padding:"2px 8px",borderRadius:2,letterSpacing:1}}>{n.observation_type}</span>
+                <span style={{backgroundColor:"#1a1a2e",color:"#888",fontSize:10,padding:"2px 8px",borderRadius:2}}>{n.unit}</span>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:11,color:"#666"}}>{n.staff_name}</div>
+                <div style={{fontSize:10,color:"#333"}}>{new Date(n.timestamp).toLocaleString()}</div>
+              </div>
+            </div>
+            <div style={{fontSize:13,color:"#ddd",lineHeight:1.7}}>{n.observation}</div>
+            {n.cohesion_score!=null && <div style={{fontSize:11,color:"#555",marginTop:6}}>Cohesion score logged: <span style={{color:tc,fontWeight:700}}>{n.cohesion_score}</span></div>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Main Demo Page ─────────────────────────────────────────────────────────────
+
+// ── ROI Calculator ─────────────────────────────────────────────────────────────
+function ROICalculator() {
+  const [beds, setBeds] = useState(40);
+  const [avgStay, setAvgStay] = useState(20000);
+  const [amaRate, setAmaRate] = useState(30);
+  const [audience, setAudience] = useState("facility");
+  const [selectedTier, setSelectedTier] = useState(null); // null = auto
+
+  const TIERS = [
+    { name:"Essential", price:3500, range:"1–30 beds", description:"Up to 30 beds · All features included" },
+    { name:"Professional", price:6500, range:"31–100 beds", description:"Up to 100 beds · All features included" },
+    { name:"Multi-Site", price:12000, range:"100+ beds", description:"Enterprise / multi-site · All features included" },
+  ];
+
+  const autoBeds = beds<=30?0:beds<=100?1:2;
+  const activeTierIdx = selectedTier !== null ? selectedTier : autoBeds;
+  const tier = TIERS[activeTierIdx];
+
+  const monthlyAdmissions = Math.round(beds * 1.2); // avg census turnover
+  const amaLosses = Math.round(monthlyAdmissions * (amaRate / 100));
+  const monthlyRevLost = amaLosses * avgStay;
+  const recoveryRate = 0.40; // CensusGuard conservatively recovers 40% of at-risk discharges
+  const patientsRetained = Math.round(amaLosses * recoveryRate);
+  const monthlyRevRecovered = patientsRetained * avgStay;
+
+  // Tier now controlled by selectedTier or auto-detect above
+
+  const netROI = monthlyRevRecovered - tier.price;
+  const roiMultiple = (monthlyRevRecovered / tier.price).toFixed(1);
+  const annualNetROI = netROI * 12;
+
+  // RPM billing
+  const rpmPerPatient = 0; // no wearable-based billing
+  const rpmMonthly = Math.round(beds * 0.7) * rpmPerPatient; // 70% of census billable
+  const netAfterRPM = netROI + rpmMonthly;
+
+  // Insurance angle
+  const readmissionCost = 35000; // avg cost to insurer per readmission
+  const readmissionsAvoided = Math.round(patientsRetained * 0.6); // 60% would have readmitted
+  const insurerSavingsMonthly = readmissionsAvoided * readmissionCost;
+  const insurerSavingsAnnual = insurerSavingsMonthly * 12;
+
+  const sliderStyle = { width:"100%", accentColor:"#D4159A", cursor:"pointer" };
+
+  return (
+    <div>
+      {/* Audience toggle */}
+      <div style={{display:"flex",gap:0,marginBottom:24,border:"1px solid #2a2a3e",borderRadius:4,overflow:"hidden",width:"fit-content"}}>
+        {[["facility","Treatment Facility ROI"],["insurer","Insurance Company ROI"]].map(([k,label])=>(
+          <button key={k} onClick={()=>setAudience(k)}
+            style={{padding:"10px 24px",border:"none",cursor:"pointer",fontSize:12,fontWeight:800,letterSpacing:1,
+              backgroundColor:audience===k?"#D4159A":"transparent",
+              color:audience===k?"#fff":"#555"}}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Subscription Tier Selector */}
+      <div style={{marginBottom:24}}>
+        <div style={{fontSize:10,letterSpacing:2,color:"#444",marginBottom:12}}>SELECT SUBSCRIPTION PLAN</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
+          {TIERS.map((t,i)=>{
+            const isActive = activeTierIdx === i;
+            const isAuto = selectedTier === null && autoBeds === i;
+            return (
+              <div
+                key={t.name}
+                onClick={()=>setSelectedTier(selectedTier===i?null:i)}
+                style={{
+                  backgroundColor:isActive?"#1a0028":"#0a0a18",
+                  border:isActive?"2px solid #D4159A":"1px solid #2a2a3e",
+                  borderRadius:6,
+                  padding:"14px 16px",
+                  cursor:"pointer",
+                  position:"relative",
+                  transition:"all 0.2s",
+                }}
+              >
+                {isAuto && <div style={{position:"absolute",top:6,right:8,fontSize:9,backgroundColor:"#D4159A22",color:"#D4159A",border:"1px solid #D4159A44",padding:"2px 6px",borderRadius:2,letterSpacing:1,fontWeight:800}}>AUTO</div>}
+                {!isAuto && isActive && <div style={{position:"absolute",top:6,right:8,fontSize:9,backgroundColor:"#8844E822",color:"#8844E8",border:"1px solid #8844E844",padding:"2px 6px",borderRadius:2,letterSpacing:1,fontWeight:800}}>SELECTED</div>}
+                <div style={{fontSize:13,fontWeight:900,color:isActive?"#D4159A":"#aaa",marginBottom:2}}>{t.name}</div>
+                <div style={{fontSize:20,fontWeight:900,color:"#fff",marginBottom:2}}>${t.price.toLocaleString()}<span style={{fontSize:11,color:"#555",fontWeight:400}}>/mo</span></div>
+                <div style={{fontSize:10,color:"#555"}}>{t.range}</div>
+              </div>
+            );
+          })}
+        </div>
+        {selectedTier !== null && (
+          <div onClick={()=>setSelectedTier(null)} style={{marginTop:8,fontSize:11,color:"#555",cursor:"pointer",textDecoration:"underline"}}>↩ Reset to auto-select based on bed count</div>
+        )}
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:24}}>
+        {/* Left — sliders */}
+        <div style={{backgroundColor:"#0a0a18",border:"1px solid #1a1a2e",borderRadius:6,padding:24}}>
+          <div style={{fontSize:10,letterSpacing:2,color:"#444",marginBottom:20}}>FACILITY INPUTS</div>
+
+          <div style={{marginBottom:20}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+              <span style={{fontSize:12,color:"#888"}}>Licensed Beds</span>
+              <span style={{fontSize:16,fontWeight:900,color:"#D4159A"}}>{beds}</span>
+            </div>
+            <input type="range" min={10} max={300} value={beds} onChange={e=>setBeds(Number(e.target.value))} style={sliderStyle}/>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#333",marginTop:4}}>
+              <span>10</span><span>300</span>
+            </div>
+          </div>
+
+          <div style={{marginBottom:20}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+              <span style={{fontSize:12,color:"#888"}}>Avg Revenue / Admission</span>
+              <span style={{fontSize:16,fontWeight:900,color:"#D4159A"}}>${avgStay.toLocaleString()}</span>
+            </div>
+            <input type="range" min={5000} max={60000} step={1000} value={avgStay} onChange={e=>setAvgStay(Number(e.target.value))} style={sliderStyle}/>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#333",marginTop:4}}>
+              <span>$5K</span><span>$60K</span>
+            </div>
+          </div>
+
+          <div style={{marginBottom:20}}>
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+              <span style={{fontSize:12,color:"#888"}}>Current AMA / Dropout Rate</span>
+              <span style={{fontSize:16,fontWeight:900,color:"#D4159A"}}>{amaRate}%</span>
+            </div>
+            <input type="range" min={10} max={60} value={amaRate} onChange={e=>setAmaRate(Number(e.target.value))} style={sliderStyle}/>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:"#333",marginTop:4}}>
+              <span>10%</span><span>60%</span>
+            </div>
+          </div>
+
+          <div style={{backgroundColor:"#07070F",border:"1px solid #1a1a2e",borderRadius:4,padding:14,marginTop:8}}>
+            <div style={{fontSize:10,color:"#444",letterSpacing:2,marginBottom:10}}>ACTIVE PLAN</div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div>
+                <div style={{fontSize:14,fontWeight:900,color:"#D4159A"}}>{tier.name}</div>
+                <div style={{fontSize:11,color:"#555"}}>{tier.range}</div>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:22,fontWeight:900,color:"#fff"}}>${tier.price.toLocaleString()}</div>
+                <div style={{fontSize:10,color:"#555"}}>/month</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right — results */}
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          {audience === "facility" ? (
+            <>
+              <div style={{backgroundColor:"#0a0a12",border:"1px solid #D4159A33",borderRadius:6,padding:20}}>
+                <div style={{fontSize:10,letterSpacing:2,color:"#D4159A",marginBottom:4}}>MONTHLY REVENUE LOST (NOW)</div>
+                <div style={{fontSize:32,fontWeight:900,color:"#D4159A"}}>-${monthlyRevLost.toLocaleString()}</div>
+                <div style={{fontSize:11,color:"#555",marginTop:4}}>{amaLosses} patients leaving × ${avgStay.toLocaleString()} avg stay</div>
+              </div>
+              <div style={{backgroundColor:"#001a0a",border:"1px solid #10D8F033",borderRadius:6,padding:20}}>
+                <div style={{fontSize:10,letterSpacing:2,color:"#10D8F0",marginBottom:4}}>MONTHLY REVENUE RECOVERED</div>
+                <div style={{fontSize:32,fontWeight:900,color:"#10D8F0"}}>+${monthlyRevRecovered.toLocaleString()}</div>
+                <div style={{fontSize:11,color:"#555",marginTop:4}}>{patientsRetained} patients retained × ${avgStay.toLocaleString()} avg stay</div>
+              </div>
+              <div style={{backgroundColor:"#0a001a",border:"1px solid #8844E833",borderRadius:6,padding:20}}>
+                <div style={{fontSize:10,letterSpacing:2,color:"#8844E8",marginBottom:4}}>EHR-INTEGRATED · ZERO NEW HARDWARE</div>
+                <div style={{fontSize:28,fontWeight:900,color:"#8844E8"}}>+${rpmMonthly.toLocaleString()}</div>
+                <div style={{fontSize:11,color:"#555",marginTop:4}}>~{Math.round(beds*0.7)} billable patients × $100/mo avg</div>
+              </div>
+              <div style={{backgroundColor:"#07070F",border:"2px solid #10D8F066",borderRadius:6,padding:20}}>
+                <div style={{fontSize:10,letterSpacing:2,color:"#10D8F0",marginBottom:4}}>NET MONTHLY ROI (AFTER SUBSCRIPTION)</div>
+                <div style={{fontSize:36,fontWeight:900,color:"#10D8F0"}}>+${netAfterRPM.toLocaleString()}</div>
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:10,flexWrap:"wrap",gap:8}}>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:10,color:"#444"}}>ROI MULTIPLE</div>
+                    <div style={{fontSize:20,fontWeight:900,color:"#fff"}}>{roiMultiple}x</div>
+                  </div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:10,color:"#444"}}>ANNUAL NET ROI</div>
+                    <div style={{fontSize:20,fontWeight:900,color:"#fff"}}>${(annualNetROI + rpmMonthly*12).toLocaleString()}</div>
+                  </div>
+                  <div style={{textAlign:"center"}}>
+                    <div style={{fontSize:10,color:"#444"}}>PAYBACK PERIOD</div>
+                    <div style={{fontSize:20,fontWeight:900,color:"#fff"}}>{"<"} 30 days</div>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{backgroundColor:"#0a0a12",border:"1px solid #D4159A33",borderRadius:6,padding:20}}>
+                <div style={{fontSize:10,letterSpacing:2,color:"#D4159A",marginBottom:4}}>MONTHLY READMISSION COST (WITHOUT CENSUSGUARD)</div>
+                <div style={{fontSize:28,fontWeight:900,color:"#D4159A"}}>-${(readmissionsAvoided * readmissionCost).toLocaleString()}</div>
+                <div style={{fontSize:11,color:"#555",marginTop:4}}>{readmissionsAvoided} readmissions × $35K avg cost to insurer</div>
+              </div>
+              <div style={{backgroundColor:"#001a0a",border:"1px solid #10D8F033",borderRadius:6,padding:20}}>
+                <div style={{fontSize:10,letterSpacing:2,color:"#10D8F0",marginBottom:4}}>MONTHLY SAVINGS WITH CENSUSGUARD</div>
+                <div style={{fontSize:32,fontWeight:900,color:"#10D8F0"}}>+${insurerSavingsMonthly.toLocaleString()}</div>
+                <div style={{fontSize:11,color:"#555",marginTop:4}}>{readmissionsAvoided} readmissions avoided per {beds}-bed facility</div>
+              </div>
+              <div style={{backgroundColor:"#07070F",border:"2px solid #10D8F066",borderRadius:6,padding:20}}>
+                <div style={{fontSize:10,letterSpacing:2,color:"#10D8F0",marginBottom:4}}>ANNUAL INSURER SAVINGS (1 FACILITY)</div>
+                <div style={{fontSize:36,fontWeight:900,color:"#10D8F0"}}>+${insurerSavingsAnnual.toLocaleString()}</div>
+                <div style={{fontSize:12,color:"#555",marginTop:8,lineHeight:1.6}}>
+                  Every $1 spent on CensusGuard saves insurers an estimated <span style={{color:"#10D8F0",fontWeight:800}}>${Math.round(insurerSavingsMonthly/tier.price)}x</span> in avoided claims. Across a network of facilities, savings compound rapidly.
+                </div>
+              </div>
+              <div style={{backgroundColor:"#0d0008",border:"1px solid #D4159A33",borderRadius:4,padding:14,fontSize:11,color:"#888",lineHeight:1.7}}>
+                <span style={{color:"#D4159A",fontWeight:800}}>Why insurers should care: </span>
+                Repeat SUD admissions are one of the highest-cost, most preventable claims in behavioral health. The average insurer pays $35K+ per readmission. CensusGuard flags dropout risk in real-time — before the patient leaves — so treatment teams can intervene. Fewer early discharges = fewer relapses = fewer claims.
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+      <div style={{marginTop:16,fontSize:10,color:"#333",textAlign:"center"}}>
+        * Calculations based on industry-average AMA rates and stay values. Actual results vary by facility. Simulated demo data only.
+      </div>
+    </div>
+  );
+}
+
+export default function Demo() {
+  const [selected, setSelected] = useState(null);
+  const [filter, setFilter] = useState("All");
+  const [tab, setTab] = useState("monitor");
+  const [showCTA, setShowCTA] = useState(false);
+  const [formData, setFormData] = useState({ name:"", facility:"", email:"", phone:"", beds:"" });
+  const [submitted, setSubmitted] = useState(false);
+  
+  const isMobile = useIsMobile();
+
+  const patients = DEMO_PATIENTS;
+  const critical = patients.filter(p=>p.risk_tier==="CRITICAL").length;
+  const high = patients.filter(p=>p.risk_tier==="HIGH").length;
+  const avgScore = Math.round(patients.reduce((a,p)=>a+p.risk_score,0)/patients.length);
+  // Revenue protected based on realistic avg stay values per tier
+  // Detox ~$8K, Residential ~$25K, PHP ~$12K avg stay value
+  const avgStayValue = { CRITICAL: 22000, HIGH: 18000, MODERATE: 12000, LOW: 8000 };
+  const revenueProtected = patients
+    .filter(p => p.risk_tier === "CRITICAL" || p.risk_tier === "HIGH")
+    .reduce((sum, p) => sum + (avgStayValue[p.risk_tier] || 0), 0)
+    .toLocaleString();
+  const activeAlerts = patients.filter(p=>p.alert_active);
+
+  const filtered = patients.filter(p=>{
+    if (filter==="All") return true;
+    if (["Critical","High","Moderate","Low"].includes(filter)) return p.risk_tier===filter.toUpperCase();
+    return p.level_of_care===filter;
+  }).sort((a,b)=>(b.risk_score||0)-(a.risk_score||0));
+
+  function handleSubmit() {
+    if (!formData.name || !formData.email || !formData.facility) return;
+    setSubmitted(true);
+  }
+
+  // Gate removed — demo is fully open
+
+  return (
+    <div style={{minHeight:"100vh",backgroundColor:"#07070F",color:"#fff",fontFamily:"'Inter','Segoe UI',sans-serif"}}>
+
+      {/* Demo Banner */}
+      <div style={{backgroundColor:"#D4159A",padding:isMobile?"8px 12px":"8px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
+        <span style={{fontSize:12,fontWeight:700,letterSpacing:1}}>🔬 LIVE DEMO — Simulated patient data. No PHI. No login required.</span>
+        <button onClick={()=>setShowCTA(true)} style={{backgroundColor:"#fff",color:"#D4159A",border:"none",padding:"4px 16px",borderRadius:2,fontWeight:800,fontSize:12,cursor:"pointer",letterSpacing:1}}>REQUEST A DEMO →</button>
+      </div>
+
+      {/* Header */}
+      <div style={{padding:isMobile?"12px 16px":"16px 32px",borderBottom:"1px solid #1a1a2e",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12}}>
+        <div style={{display:"flex",alignItems:"center",gap:16}}>
+          <img src={LOGO} alt="AnchorPoint" style={{height:40,objectFit:"contain"}}/>
+          <div>
+            <div style={{fontWeight:900,fontSize:18,letterSpacing:1}}>CensusGuard<span style={{color:"#D4159A"}}>™</span></div>
+            <div style={{fontSize:11,color:"#555",letterSpacing:2}}>AI-DRIVEN PATIENT RETENTION · DEMO ENVIRONMENT</div>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+          <SearchBar patients={patients} onSelect={p=>{setSelected(p);setTab("monitor");}}/>
+          {!isMobile && <span style={{backgroundColor:"#10D8F022",color:"#10D8F0",border:"1px solid #10D8F033",fontSize:11,fontWeight:700,padding:"4px 12px",borderRadius:2,letterSpacing:1}}>● REAL-TIME SCORING ACTIVE</span>}
+          {!isMobile && <span style={{backgroundColor:"#10D8F022",color:"#10D8F0",border:"1px solid #10D8F033",fontSize:11,fontWeight:700,padding:"4px 12px",borderRadius:2,letterSpacing:1}}>⚡ TRIGGER: BHT CHECK-IN</span>}
+          <button onClick={()=>setShowCTA(true)} style={{backgroundColor:"#D4159A",border:"none",color:"#fff",padding:"8px 20px",borderRadius:2,fontWeight:800,fontSize:12,cursor:"pointer",letterSpacing:1}}>GET ACCESS</button>
+        </div>
+      </div>
+
+      {/* Stats Bar */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:0,borderBottom:"1px solid #1a1a2e"}}>
+        {[
+          ["TOTAL PATIENTS", patients.length, "#fff"],
+          ["CRITICAL", critical, "#D4159A"],
+          ["HIGH RISK", high, "#ff6b35"],
+          ["AVG RISK SCORE", avgScore, "#f0c040"],
+          ["REVENUE PROTECTED", `$${revenueProtected}`, "#10D8F0"],
+        ].map(([label,val,color])=>(
+          <div key={label} style={{padding:"12px 8px",borderRight:"1px solid #1a1a2e",borderBottom:"1px solid #1a1a2e",textAlign:"center"}}>
+            <div style={{fontSize:10,color:"#444",letterSpacing:2,marginBottom:4}}>{label}</div>
+            <div style={{fontSize:isMobile?18:28,fontWeight:900,color}}>{val}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Tabs */}
+      <div style={{display:"flex",gap:0,padding:isMobile?"0 8px":"0 32px",borderBottom:"1px solid #1a1a2e",overflowX:"auto",WebkitOverflowScrolling:"touch"}}>
+        {[["monitor","Patient Monitor"],["census","Census Floor"],["flow","Group Flow"],["narrative","Group Narrative"],["alerts","Active Alerts"],["roi","ROI Calculator"]].map(([t,label])=>(
+          <button key={t} onClick={()=>{setTab(t);setSelected(null);}} style={{background:"none",border:"none",borderBottom:tab===t?"2px solid #D4159A":"2px solid transparent",color:tab===t?"#D4159A":"#555",padding:"14px 24px",cursor:"pointer",fontSize:13,fontWeight:700,letterSpacing:1,marginBottom:-1,whiteSpace:"nowrap"}}>
+            {label}{t==="alerts"&&activeAlerts.length>0&&<span style={{marginLeft:6,backgroundColor:"#D4159A",color:"#fff",borderRadius:"50%",width:18,height:18,fontSize:10,fontWeight:900,display:"inline-flex",alignItems:"center",justifyContent:"center"}}>{activeAlerts.length}</span>}
+          </button>
+        ))}
+      </div>
+
+      <div style={{padding:isMobile?"16px 14px":"24px 32px"}}>
+
+        {/* Patient Monitor */}
+        {tab==="monitor" && (
+          <div>
+            {/* Filters */}
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16}}>
+              {["All","Critical","High","Moderate","Low","Detox","Residential","PHP"].map(f=>(
+                <button key={f} onClick={()=>setFilter(f)} style={{background:filter===f?"#D4159A":"none",border:`1px solid ${filter===f?"#D4159A":"#2a2a3e"}`,color:filter===f?"#fff":"#555",padding:"4px 14px",borderRadius:2,cursor:"pointer",fontSize:11,fontWeight:700,letterSpacing:1}}>{f}</button>
+              ))}
+            </div>
+
+            <div style={{overflowX:"auto"}}>
+              <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+                <thead>
+                  <tr style={{borderBottom:"1px solid #1a1a2e"}}>
+                    {["Patient","Unit","Room","Day","Substance","Risk Score","Tier","Velocity","Trend","Last BHT","Alerts"].map(h=>(
+                      <th key={h} style={{padding:"8px 12px",textAlign:"left",fontSize:10,color:"#444",letterSpacing:1,fontWeight:700,whiteSpace:"nowrap"}}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(p=>{
+                    const c = TIER_COLOR[p.risk_tier]||"#555";
+                    const isSelected = selected?.id === p.id;
+                    return (
+                      <tr key={p.id} onClick={()=>setSelected(isSelected?null:p)} style={{borderBottom:"1px solid #0d0d1a",cursor:"pointer",backgroundColor:isSelected?TIER_BG[p.risk_tier]||"#0d0d1a":"transparent"}}
+                        onMouseEnter={e=>!isSelected&&(e.currentTarget.style.backgroundColor="#0d0d1a")}
+                        onMouseLeave={e=>!isSelected&&(e.currentTarget.style.backgroundColor="transparent")}>
+                        <td style={{padding:"10px 12px",fontWeight:700,color:"#fff"}}>{p.name}</td>
+                        <td style={{padding:"10px 12px",color:"#888"}}>{p.unit}</td>
+                        <td style={{padding:"10px 12px",color:"#555"}}>{p.room_number||"—"}</td>
+                        <td style={{padding:"10px 12px",color:"#888"}}>{p.length_of_stay}</td>
+                        <td style={{padding:"10px 12px",color:"#666",fontSize:11}}>{SUBSTANCE_MAP[p.substance_encoded]||"—"}</td>
+                        <td style={{padding:"10px 12px"}}><span style={{fontSize:22,fontWeight:900,color:c}}>{p.risk_score}</span></td>
+                        <td style={{padding:"10px 12px"}}><TierBadge tier={p.risk_tier}/></td>
+                        <td style={{padding:"10px 12px"}}><VelocityChip v={p.velocity}/></td>
+                        <td style={{padding:"10px 12px"}}><MiniSparkline up={p.velocity>0}/></td>
+                        <td style={{padding:"10px 12px",whiteSpace:"nowrap"}}>
+                          {p.last_bht_checkin ? (
+                            <div>
+                              <div style={{fontSize:10,color:"#10D8F0",fontWeight:700}}>⚡ BHT</div>
+                              <div style={{fontSize:10,color:"#555"}}>{new Date(p.last_bht_checkin).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</div>
+                            </div>
+                          ) : <span style={{color:"#333",fontSize:11}}>—</span>}
+                        </td>
+                        <td style={{padding:"10px 12px"}}>
+                          <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                            {p.alert_active&&<span style={{backgroundColor:"#D4159A22",color:"#D4159A",fontSize:10,padding:"2px 6px",borderRadius:2,fontWeight:700}}>🚨 ALERT</span>}
+                            {p.cliff_window&&<span style={{backgroundColor:"#f0c04022",color:"#f0c040",fontSize:10,padding:"2px 6px",borderRadius:2}}>CLIFF</span>}
+                            {p.calm_before_storm_flag&&<span style={{backgroundColor:"#8844E822",color:"#8844E8",fontSize:10,padding:"2px 6px",borderRadius:2}}>CBS</span>}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Patient detail now shown as modal overlay */}
+          </div>
+        )}
+
+        {/* Census Floor */}
+        {tab==="census" && (
+          <div>
+            {/* Patient detail shown as modal overlay */}
+            <CensusFloorMap patients={patients} onSelectPatient={p=>{setSelected(p);}}/>
+          </div>
+        )}
+
+        {/* Group Flow */}
+        {tab==="flow" && (
+          <GroupProgressFlow patients={patients}/>
+        )}
+
+        {/* Group Narrative */}
+        {tab==="narrative" && (
+          <GroupNarrativeDemo/>
+        )}
+
+        {/* Active Alerts */}
+        {tab==="alerts" && (
+          <div>
+            <div style={{fontSize:10,letterSpacing:2,color:"#444",marginBottom:16}}>ACTIVE CLINICAL ALERTS ({activeAlerts.length})</div>
+            {!activeAlerts.length && <div style={{color:"#555",fontSize:14,textAlign:"center",padding:40}}>No active alerts</div>}
+            {activeAlerts.map(p=>{
+              const c = TIER_COLOR[p.risk_tier]||"#555";
+              return (
+                <div key={p.id} style={{backgroundColor:"#0a0a18",border:`1px solid ${c}44`,borderLeft:`3px solid ${c}`,borderRadius:4,padding:"16px 20px",marginBottom:12}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8,flexWrap:"wrap",gap:8}}>
+                    <div>
+                      <div style={{fontWeight:900,fontSize:15,color:"#fff",marginBottom:4}}>{p.name}</div>
+                      <div style={{fontSize:11,color:"#555"}}>Day {p.length_of_stay} · {p.level_of_care} · Room {p.room_number}</div>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <span style={{fontSize:32,fontWeight:900,color:c}}>{p.risk_score}</span>
+                      <TierBadge tier={p.risk_tier}/>
+                    </div>
+                  </div>
+                  <div style={{fontSize:12,color:"#D4159A",fontWeight:700,marginBottom:6}}>🚨 {p.alert_reason}</div>
+                  <div style={{fontSize:11,color:"#10D8F0",marginBottom:8}}>⚡ Triggered by BHT check-in {p.last_bht_checkin ? "at " + new Date(p.last_bht_checkin).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}) : ""}</div>
+                  <button onClick={()=>{setTab("monitor");setSelected(p);}} style={{backgroundColor:"#D4159A",border:"none",color:"#fff",padding:"6px 16px",borderRadius:2,cursor:"pointer",fontSize:11,fontWeight:700}}>View Patient →</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ROI Calculator */}
+        {tab==="roi" && (
+          <div>
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:18,fontWeight:900,color:"#fff",marginBottom:4}}>Revenue Impact Calculator</div>
+              <div style={{fontSize:12,color:"#555"}}>Drag the sliders to model your facility's ROI — or switch to the Insurance view to show payer savings.</div>
+            </div>
+            <ROICalculator/>
+          </div>
+        )}
+      </div>
+
+      {/* Patient Detail Modal */}
+      {selected && (
+        <div
+          onClick={()=>setSelected(null)}
+          style={{position:"fixed",inset:0,backgroundColor:"rgba(0,0,0,0.75)",display:"flex",alignItems:"flex-start",justifyContent:"flex-end",zIndex:500,padding:0}}
+        >
+          <div
+            onClick={e=>e.stopPropagation()}
+            style={{
+              width:"100vw",maxWidth:620,height:"100vh",backgroundColor:"#07070F",
+              borderLeft:"1px solid #2a2a3e",overflowY:"auto",
+              display:"flex",flexDirection:"column",
+              boxShadow:"-8px 0 40px rgba(0,0,0,0.6)"
+            }}
+          >
+            {/* Slide-in header */}
+            <div style={{padding:"16px 20px",borderBottom:"1px solid #1a1a2e",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,backgroundColor:"#07070F",zIndex:10}}>
+              <div style={{fontSize:11,color:"#555",letterSpacing:2}}>PATIENT DETAIL</div>
+              <button onClick={()=>setSelected(null)} style={{background:"none",border:"1px solid #2a2a3e",color:"#888",width:30,height:30,borderRadius:"50%",cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
+            </div>
+            <div style={{padding:"20px"}}>
+              <PatientDetail patient={selected} onClose={()=>setSelected(null)}/>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CTA Modal */}
+      {showCTA && (
+        <div style={{position:"fixed",inset:0,backgroundColor:"rgba(0,0,0,0.85)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:20}}>
+          <div style={{backgroundColor:"#0a0a18",border:"1px solid #D4159A44",borderRadius:6,padding:32,maxWidth:480,width:"100%",position:"relative"}}>
+            <button onClick={()=>{setShowCTA(false);setSubmitted(false);}} style={{position:"absolute",top:12,right:16,background:"none",border:"none",color:"#555",fontSize:22,cursor:"pointer"}}>×</button>
+            {!submitted ? (
+              <>
+                <div style={{fontSize:20,fontWeight:900,color:"#fff",marginBottom:6}}>Ready to protect your census?</div>
+                <div style={{fontSize:13,color:"#555",marginBottom:24,lineHeight:1.6}}>We're currently onboarding pilot partners. Tell us about your facility and we'll be in touch within 24 hours.</div>
+                {[["Name","name","Your name"],["Facility","facility","Facility name"],["Email","email","Work email"],["Phone","phone","Phone number"],["Beds (optional)","beds","Number of beds"]].map(([label,field,placeholder])=>(
+                  <div key={field} style={{marginBottom:12}}>
+                    <div style={{fontSize:10,color:"#555",marginBottom:4,letterSpacing:1}}>{label.toUpperCase()}</div>
+                    <input value={formData[field]} onChange={e=>setFormData({...formData,[field]:e.target.value})} placeholder={placeholder}
+                      style={{width:"100%",backgroundColor:"#111",border:"1px solid #2a2a3e",color:"#fff",padding:"10px 12px",borderRadius:3,fontSize:13,boxSizing:"border-box"}}/>
+                  </div>
+                ))}
+                <button onClick={handleSubmit} style={{width:"100%",backgroundColor:"#D4159A",border:"none",color:"#fff",padding:"12px",borderRadius:3,fontWeight:800,fontSize:14,cursor:"pointer",letterSpacing:1,marginTop:8}}>REQUEST A DEMO →</button>
+              </>
+            ) : (
+              <div style={{textAlign:"center",padding:"20px 0"}}>
+                <div style={{fontSize:40,marginBottom:16}}>🎯</div>
+                <div style={{fontSize:20,fontWeight:900,color:"#fff",marginBottom:8}}>You're on the list.</div>
+                <div style={{fontSize:13,color:"#555",lineHeight:1.6}}>We'll be in touch within 24 hours. In the meantime, keep exploring the demo.</div>
+                <button onClick={()=>{setShowCTA(false);setSubmitted(false);}} style={{marginTop:20,backgroundColor:"#D4159A",border:"none",color:"#fff",padding:"10px 24px",borderRadius:3,fontWeight:700,cursor:"pointer"}}>Back to Demo</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

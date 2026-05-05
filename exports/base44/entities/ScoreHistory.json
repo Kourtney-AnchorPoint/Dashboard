@@ -1,0 +1,40 @@
+{
+  "type": "object",
+  "properties": {
+    "patient_id": {
+      "type": "string"
+    },
+    "patient_name": {
+      "type": "string"
+    },
+    "score": {
+      "type": "number"
+    },
+    "previous_score": {
+      "type": "number"
+    },
+    "risk_tier": {
+      "type": "string"
+    },
+    "day_in_treatment": {
+      "type": "number"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "trigger": {
+      "type": "string"
+    },
+    "drivers": {
+      "type": "string"
+    },
+    "velocity": {
+      "type": "number"
+    },
+    "alert_fired": {
+      "type": "boolean"
+    }
+  },
+  "required": [],
+  "name": "ScoreHistory"
+}

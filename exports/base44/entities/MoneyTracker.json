@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "properties": {
+    "label": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "Income",
+        "Expense",
+        "Grant",
+        "Investment",
+        "Pending"
+      ]
+    },
+    "amount": {
+      "type": "number"
+    },
+    "date": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Confirmed",
+        "Pending",
+        "Projected",
+        "Paid",
+        "Overdue"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "recurs": {
+      "type": "boolean"
+    }
+  },
+  "required": [],
+  "name": "MoneyTracker"
+}
