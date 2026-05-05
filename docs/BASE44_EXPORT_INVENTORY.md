@@ -138,6 +138,17 @@ The copied assets include:
 - Marketing email drafts
 - Python scripts for brochure/deck generation
 
+## Dashboard Build Documents
+
+Two identical VEGA-created dashboard build PDFs are preserved:
+
+- `assets/docs/Migrate_dashboard_Doc.pdf`
+- `assets/docs/CensusGuard_Dashboard_BuildDoc.pdf`
+
+Summary:
+
+- `docs/DASHBOARD_BUILD_DOC_SUMMARY.md`
+
 ## AWS Migration Implications
 
 Suggested first AWS shape:

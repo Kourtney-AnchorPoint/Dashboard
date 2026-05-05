@@ -1,0 +1,211 @@
+CensusGuard Dashboard — Build Documentation · AnchorPoint Health Systems LLC · INTERNAL ONLY · Page 1
+CensusGuard Dashboard
+Full Build Documentation — For Kourtney / AI Constellation
+Generated April 29, 2026 by Vega · INTERNAL USE ONLY
+What This Document Is
+This document contains everything needed to understand, maintain, migrate, or rebuild the CensusGuard dashboard — even without
+Vega's help. If credits are exhausted or Vega is unavailable, you have everything you need here.
+Tech Stack
+Layer
+Technology
+Notes
+Frontend
+React (JSX)
+Standard React — no proprietary lock-in
+Styling
+Inline CSS
+Dark theme, magenta/purple/cyan palette
+Data (current)
+Base44 SDK
+Must be swapped on migration — see Section 5
+Data (target)
+Google Firestore
+Already in your GCP project
+Hosting (current)
+Base44 platform
+base44.app subdomain
+Hosting (target)
+Firebase Hosting
+Free tier covers early stage
+AI Model
+Vertex AI AutoML v1.0
+GCP: censusguard-proof-of-concept
+EHR Integration
+Kipu EHR (41 APIs)
+Phase 2 — not yet live
+Auth (current)
+Base44 built-in
+Must be replaced on migration
+Auth (target)
+Firebase Auth
+Google sign-in, email/password
+App Routes
+Route
+File
+Access
+Description
+/
+Home.jsx
+Public
+Marketing landing page
+/demo
+Demo.jsx
+Public
+18 fake patients — full dashboard experience, no login
+/dashboard
+Dashboard.jsx
+Password
+Real patient data (production)
+/pitch
+Pitch.jsx
+Public
+Investor pitch mini-site
+/command
+Command.jsx
+Admin
+Task + money tracker command center
+/about
+About.jsx
+Public
+About AnchorPoint
+/contact
+Contact.jsx
+Public
+Contact / demo request form
+/admin
+Admin.jsx
+Admin
+Admin panel
+Entity Schemas (Database Tables)
+These are all the data tables. Every record also auto-includes: id, created_date, updated_date, created_by.
+Patient
+Core patient record with risk scoring data
+ name, episode_id, unit, room_number, smoker, level_of_care, admit_date
+
+CensusGuard Dashboard — Build Documentation · AnchorPoint Health Systems LLC · INTERNAL ONLY · Page 2
+ risk_score (0-100), risk_tier (LOW/MODERATE/HIGH/CRITICAL)
+ velocity (rate of change), alert_active, alert_reason
+ top_drivers (array of risk factors), intervention, status
+ + 20 demographic/clinical flags (substance, housing, employment, etc.)
+ScoreHistory
+Every rescore event — one record per score change
+ patient_id, patient_name, score, previous_score, risk_tier
+ day_in_treatment, timestamp, trigger (e.g. "BHT Check-in")
+ drivers (array), velocity, alert_fired
+ClinicalAction
+Logged when clinician acts on an alert
+ patient_id, patient_name, alert_reason, action_taken, action_type
+ staff_name, timestamp, score_at_action, follow_up_required, outcome_note
+GroupCohesion
+Unit-level group energy tracking
+ unit, cohesion_score, observation, observation_type
+ staff_name, timestamp, affected_patients (array)
+DemoLead
+Demo request form submissions
+ name, email, company, role, source
+Task
+Command center task tracker
+ title, category, priority, status, due_date, notes, contact, linked_opportunity
+MoneyTracker
+Financial pipeline tracking
+ label, category, amount, date, status, notes, recurs
+SDK Migration: Base44 → Firestore
+Every data call in the JSX files currently uses the Base44 SDK. On GCP migration, swap like this:
+Base44 (current)
+import { Patient } from '@/api/entities';
+const patients = await Patient.list();
+const p = await Patient.get(id);
+await Patient.create({ name: 'John', risk_score: 72 });
+await Patient.update(id, { risk_score: 85 });
+await Patient.delete(id);
+const high = await Patient.filter({ risk_tier: 'HIGH' });
+Firestore (target)
+import { collection, getDocs, doc, getDoc,
+  addDoc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
+import { db } from './firebase';
+// LIST
+const snap = await getDocs(collection(db, 'patients'));
+
+CensusGuard Dashboard — Build Documentation · AnchorPoint Health Systems LLC · INTERNAL ONLY · Page 3
+const patients = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+// GET
+const d = await getDoc(doc(db, 'patients', id));
+// CREATE
+await addDoc(collection(db, 'patients'), { name: 'John' });
+// UPDATE
+await updateDoc(doc(db, 'patients', id), { risk_score: 85 });
+// DELETE
+await deleteDoc(doc(db, 'patients', id));
+// FILTER
+const q = query(collection(db,'patients'), where('risk_tier','==','HIGH'));
+Migration Checklist — Base44 → GCP
+Phase 1: Setup (Week 1)
+■ Create Firebase project (or use GCP: censusguard-proof-of-concept)
+■ Enable Firestore in Firebase console
+■ Enable Firebase Hosting + Firebase Auth
+■ Sign Google Cloud HIPAA BAA — REQUIRED before any real patient data
+■ Install Firebase CLI: npm install -g firebase-tools
+Phase 2: Code Migration (Week 2)
+■ npm create vite@latest censusguard -- --template react
+■ Copy all JSX files from Base44 pages/ directory
+■ npm install firebase
+■ Create src/firebase.js with your Firebase config
+■ Global find-replace: from '@/api/entities' → from './firebase-entities'
+■ Create firebase-entities.js wrapper using mapping above
+■ Replace Base44 auth (useCurrentUser) with Firebase Auth hooks
+■ Update routing to React Router v6
+Phase 3: Data Migration (Week 3)
+■ Export all entities from Base44 (contact Base44 support or use API)
+■ Write migration script to import JSON → Firestore
+■ Validate all records transferred correctly
+■ Test dashboard with real data in Firestore
+Phase 4: Deploy (Week 4)
+■ firebase deploy --only hosting
+■ Set up custom domain (censusguard.ai or censusguard.com)
+■ Set up Firebase Auth authorized domains
+■ Cancel Base44 subscription → saves $100/mo
+Phase 5: Vertex AI (Week 5-6)
+■ Deploy Vertex AI endpoint from existing model (89.6% AUC-ROC)
+■ Create Cloud Run function to call endpoint on patient data
+■ Wire to dashboard — replace mock scores with live Vertex predictions
+■ Test with synthetic patients before any real records
+
+CensusGuard Dashboard — Build Documentation · AnchorPoint Health Systems LLC · INTERNAL ONLY · Page 4
+Dashboard Features — Full List
+Feature
+Description
+Global Stats Bar
+Total census, high/critical count, average risk score, 30-day retention rate
+Patient Risk Monitor
+All patients with name, unit, room, score, tier badge, velocity arrow. Click row → detail panel.
+Patient Detail Panel
+Full risk breakdown, top 3 drivers with % bars, score history sparkline, intervention log, action buttons.
+Census Floor Tab
+Visual floor map with color-coded rooms — risk at a glance.
+Group Flow Tab
+Unit cohesion score, group energy level, staff observation log.
+Group Narrative Tab
+AI-generated unit narrative summary, recent alerts in story form.
+Active Alerts Panel
+Real-time alert cards. Dismiss / Log Intervention / Escalate actions.
+History Tab
+Full ScoreHistory timeline. BHT events in cyan, admission intake in grey.
+ROI Calculator
+Bed count input, payer mix selector, cost vs. recovered revenue, bar chart, subscription toggle.
+Design Tokens
+--bg: #07070F
+--magenta: #D4159A
+--purple: #8844E8
+--cyan: #10D8F0
+--white: #FFFFFF
+--light: #E0E0EE
+--dimgray: #8888A8
+--dark2: #111125
+--cardline: #28284A
+Key Contacts for Migration
+Kourtney Rhodes (Founder): Kourtney@anchorpointhealthsystems.com · 405-887-0165
+Vega (AI — Base44): https://app.base44.com/superagent/69dabcfbdff2d23eb6ddb562
+Oryn (AI — Claude): Separate Claude instance — strategy & Wix coordination
+GCP Project: censusguard-proof-of-concept · $1,278.73 credits available
+ The code is React. The data is Firestore. The AI is Vertex. All three are yours.
+— Vega · AnchorPoint Health Systems LLC · April 29, 2026

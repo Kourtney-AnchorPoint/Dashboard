@@ -4,8 +4,8 @@
 
 - Project: VEGA, your super agent
 - Source platform: Base44
-- Target: a self-owned versioned codebase deployed on AWS or Google Cloud
-- Direction: deploy first on AWS, using available AWS credits
+- Target: self-owned versioned codebases deployed off Base44
+- Direction: VEGA deploys AWS-first using available AWS credits; CensusGuard dashboard migrates Google Cloud-first
 - Role: your main assistant for marketing, operations, building, and general execution
 - Repo branch: `main`
 - First recovered export: copied into `exports/base44/`
@@ -30,14 +30,19 @@
    - Data storage
    - Auth
    - Third-party integrations
-5. Choose the replacement cloud stack: AWS first, while keeping the codebase portable.
-6. Rebuild and verify VEGA feature by feature.
+5. Split VEGA assistant from CensusGuard dashboard/product where needed.
+6. Choose deployment targets:
+   - VEGA assistant: AWS-first
+   - CensusGuard dashboard: Google Cloud-first
+7. Rebuild and verify each feature by product area.
 
 Current status: steps 1-2 are underway. The first copied Base44 files are organized in `exports/base44/`, with supporting brand/docs/assets in `assets/`.
 
 ## Recovered Snapshot
 
 See `docs/BASE44_EXPORT_INVENTORY.md` for the current inventory.
+
+See `docs/CENSUSGUARD_IP_PROTECTION.md` for the CensusGuard IP protection plan.
 
 Major recovered pieces:
 
@@ -51,9 +56,13 @@ Major recovered pieces:
 
 ## Cloud Direction
 
-VEGA should be rebuilt so the core app is portable first, then deployed to either AWS or Google Cloud.
+VEGA and CensusGuard should be rebuilt as separate-but-connected systems, both owned and versioned here.
 
-Current preferred deployment target: AWS.
+Current VEGA preferred deployment target: AWS.
+
+Current CensusGuard dashboard preferred deployment target: Google Cloud.
+
+IP protection default: private repo, private cloud resources, server-side secrets, and sanitized public demos only.
 
 ### Likely Building Blocks
 
@@ -84,11 +93,51 @@ Current preferred deployment target: AWS.
 - Secrets: Secret Manager
 - Logs: Cloud Logging
 
+### CensusGuard Google-First Candidate Stack
+
+- Dashboard frontend: Firebase Hosting or Cloud Run
+- API/backend: Cloud Run
+- Patient/risk data: Cloud SQL/Postgres for auditability, or Firestore for faster prototype migration
+- Files/assets: Cloud Storage
+- Secrets: Google Secret Manager
+- Logs/audit trail: Cloud Logging plus application-level audit records
+- Model calls: server-side only
+- Public demos: synthetic data only
+
 ## Decision Rule
 
 Choose AWS if VEGA needs maximum enterprise flexibility, deep infrastructure control, or easy expansion into many cloud services.
 
-Choose Google Cloud if VEGA should be fast to ship, container-friendly, Firebase-friendly, or closely tied to Google services.
+Choose Google Cloud for CensusGuard because the dashboard and ML work are already aligned with the Google ecosystem.
+
+## Product Split
+
+### VEGA
+
+VEGA is the assistant and operating partner:
+
+- Marketing
+- Operations
+- Builder/dev support
+- Browser extension
+- Founder voice and context
+- Workflows across LinkedIn, Gmail, and the web
+
+Target cloud: AWS first.
+
+### CensusGuard
+
+CensusGuard is the protected product/dashboard that you and VEGA built together:
+
+- Behavioral health safety infrastructure
+- Patient risk scoring dashboard
+- Clinical action/audit trail
+- Score history
+- Group cohesion observations
+- Demo/pitch surfaces
+- CensusGuard brand and IP
+
+Target cloud: Google Cloud first.
 
 ## VEGA Product Role
 
