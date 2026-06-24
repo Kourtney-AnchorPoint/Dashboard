@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --cg-bg: #07070F;
+    --cg-shell: #09091a;
+    --cg-panel: #0a0a18;
+    --cg-surface: #0d0d1a;
+    --cg-card: #111125;
+    --cg-border: #1a1a2e;
+    --cg-cardline: #28284A;
+    --cg-magenta: #D4159A;
+    --cg-purple: #8844E8;
+    --cg-cyan: #10D8F0;
+    --cg-foreground: #E0E0EE;
+    --cg-muted: #8888A8;
+    --cg-high: #ff6b35;
+    --cg-moderate: #f0c040;
+    --cg-critical-bg: #2a0018;
+    --cg-high-bg: #2a1400;
+    --cg-moderate-bg: #252000;
+    --cg-low-bg: #001c22;
+
+    --background: 240 36% 4%; /* #07070F */
+    --foreground: 240 29% 91%; /* #E0E0EE */
+    --card: 240 37% 11%; /* #111125 */
+    --card-foreground: 240 29% 91%; /* #E0E0EE */
+    --popover: 240 33% 8%; /* #0d0d1a */
+    --popover-foreground: 240 29% 91%; /* #E0E0EE */
+    --primary: 186 88% 50%; /* #10D8F0 */
+    --primary-foreground: 240 36% 4%;
+    --secondary: 265 78% 59%; /* #8844E8 */
+    --secondary-foreground: 240 29% 91%; /* #E0E0EE */
+    --muted: 240 33% 8%; /* #0d0d1a */
+    --muted-foreground: 240 16% 60%; /* #8888A8 */
+    --accent: 318 82% 46%; /* #D4159A */
+    --accent-foreground: 240 29% 91%; /* #E0E0EE */
+    --destructive: 318 82% 46%; /* #D4159A */
+    --destructive-foreground: 240 29% 91%; /* #E0E0EE */
+    --border: 240 28% 14%; /* #1a1a2e */
+    --input: 240 30% 22%; /* #28284A */
+    --ring: 186 88% 50%; /* #10D8F0 */
+    --radius: 0.5rem;
+    --risk-critical: 318 82% 46%; /* #D4159A */
+    --risk-high: 16 100% 60%; /* #ff6b35 */
+    --risk-moderate: 44 85% 60%; /* #f0c040 */
+    --risk-low: 186 88% 50%; /* #10D8F0 */
+    --risk-critical-bg: 326 100% 8%; /* #2a0018 */
+    --risk-high-bg: 29 100% 8%; /* #2a1400 */
+    --risk-moderate-bg: 52 100% 7%; /* #252000 */
+    --risk-low-bg: 191 100% 7%; /* #001c22 */
+  }
+
+  * {
+    @apply border-border;
+  }
+}
+
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--cg-bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  overflow-x: hidden;
+  background: var(--cg-bg);
+}
+
+#root {
+  overflow-x: hidden;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--cg-cyan);
+  outline-offset: 2px;
+}
+
+.bg-white {
+  background-color: var(--cg-panel) !important;
+}
+
+.bg-field {
+  background-color: var(--cg-bg) !important;
+}
+
+.bg-clinic {
+  background:
+    radial-gradient(ellipse at 18% 0%, rgba(212, 21, 154, 0.22), transparent 44%),
+    radial-gradient(ellipse at 80% 10%, rgba(16, 216, 240, 0.13), transparent 38%),
+    radial-gradient(ellipse at 62% 0%, rgba(136, 68, 232, 0.18), transparent 42%),
+    var(--cg-shell) !important;
+}
+
+.border-line {
+  border-color: var(--cg-border) !important;
+}
+
+.shadow-panel {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.32) !important;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--cg-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a1a3e;
+  border-radius: 2px;
+}

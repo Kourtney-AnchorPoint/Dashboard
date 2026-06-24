@@ -1,0 +1,12 @@
+.git
+.gitignore
+.dockerignore
+node_modules
+dist
+cloud-run-export
+api-server*.log
+vite*.log
+assets
+exports
+docs
+vega

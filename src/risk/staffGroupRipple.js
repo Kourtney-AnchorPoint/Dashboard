@@ -48,14 +48,14 @@ function getPatientRiskLevel(row) {
   return String(row.patient_risk_level || row.risk_tier || "").toLowerCase();
 }
 
-export function applyBhtGroupRippleLogic(rows) {
+export function applyStaffGroupRippleLogic(rows) {
   const inputRows = (rows || []).map((row) => ({ ...row }));
   const staffUnitGroups = groupBy(inputRows, (row) => `${getUnitId(row)}::${getStaffId(row)}`);
   const unitGroups = groupBy(inputRows, getUnitId);
 
-  const bhtVarianceByGroup = new Map();
+  const staffVarianceByGroup = new Map();
   for (const [key, groupRows] of staffUnitGroups.entries()) {
-    bhtVarianceByGroup.set(key, standardDeviation(groupRows.map(getBehaviorScore)));
+    staffVarianceByGroup.set(key, standardDeviation(groupRows.map(getBehaviorScore)));
   }
 
   const unitVelocityByGroup = new Map();
@@ -65,19 +65,19 @@ export function applyBhtGroupRippleLogic(rows) {
 
   return inputRows.map((row) => {
     const staffUnitKey = `${getUnitId(row)}::${getStaffId(row)}`;
-    const bhtVariance = bhtVarianceByGroup.get(staffUnitKey) || 0;
-    const bhtReliabilityScore = bhtVariance === 0 ? 0.5 : 1.0;
+    const staffVariance = staffVarianceByGroup.get(staffUnitKey) || 0;
+    const staffReliabilityScore = staffVariance === 0 ? 0.5 : 1.0;
     const unitVelocity = unitVelocityByGroup.get(getUnitId(row)) || 0;
-    const groupRippleIndex = unitVelocity * bhtReliabilityScore;
+    const groupRippleIndex = unitVelocity * staffReliabilityScore;
     const contagionRiskMultiplier =
       groupRippleIndex > 5 && getPatientRiskLevel(row) === "high" ? 1.5 : 1.0;
     const finalEngineeredVelocity =
-      toNumber(getBehavioralVelocity(row)) * contagionRiskMultiplier * bhtReliabilityScore;
+      toNumber(getBehavioralVelocity(row)) * contagionRiskMultiplier * staffReliabilityScore;
 
     return {
       ...row,
-      bht_variance: bhtVariance,
-      bht_reliability_score: bhtReliabilityScore,
+      staff_variance: staffVariance,
+      staff_reliability_score: staffReliabilityScore,
       group_ripple_index: groupRippleIndex,
       contagion_risk_multiplier: contagionRiskMultiplier,
       final_engineered_velocity: finalEngineeredVelocity,

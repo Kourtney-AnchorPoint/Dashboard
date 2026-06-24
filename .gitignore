@@ -34,3 +34,11 @@ Thumbs.db
 # Local scratch
 tmp/
 scratch/
+tmp-inspect-*/
+apk-inspect/
+cloud-run-export/
+*.zip
+*.png
+*.jpg
+*.jpeg
+*.webp

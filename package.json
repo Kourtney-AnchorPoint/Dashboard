@@ -1,0 +1,46 @@
+{
+    "scripts": {
+        "dev": "node ./node_modules/vite/bin/vite.js --host 127.0.0.1",
+        "build": "node ./node_modules/vite/bin/vite.js build",
+        "gcp-build": "npm run build",
+        "preview": "node ./node_modules/vite/bin/vite.js preview --host 127.0.0.1",
+        "start": "node server/cloud-run-dashboard.mjs",
+        "test": "node ./node_modules/vitest/vitest.mjs run",
+        "test:watch": "node ./node_modules/vitest/vitest.mjs"
+    },
+    "engines": {
+        "node": ">=22"
+    },
+    "dependencies": {
+        "@radix-ui/react-scroll-area": "^1.2.10",
+        "@radix-ui/react-select": "^2.2.6",
+        "@radix-ui/react-separator": "^1.1.8",
+        "@radix-ui/react-slot": "^1.2.4",
+        "@radix-ui/react-toggle-group": "^1.1.11",
+        "@vitejs/plugin-react": "latest",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "framer-motion": "^12.38.0",
+        "lucide-react": "latest",
+        "react": "latest",
+        "react-dom": "latest",
+        "react-router-dom": "^7.15.0",
+        "recharts": "^3.8.1",
+        "sonner": "^2.0.7",
+        "tailwind-merge": "^3.5.0",
+        "tailwindcss-animate": "^1.0.7",
+        "typescript": "latest",
+        "vite": "latest"
+    },
+    "devDependencies": {
+        "@testing-library/jest-dom": "latest",
+        "@testing-library/react": "latest",
+        "@testing-library/user-event": "latest",
+        "autoprefixer": "latest",
+        "jsdom": "latest",
+        "postcss": "latest",
+        "tailwindcss": "^3.4.17",
+        "vitest": "latest"
+    },
+    "type": "module"
+}

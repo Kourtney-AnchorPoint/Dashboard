@@ -110,6 +110,8 @@ Real:
 - Encrypt database/storage at rest
 - Restrict IAM by least privilege
 - Separate dev/staging/prod
+- Use Datadog and Google Cloud Logging for PHI-safe monitoring, uptime, errors, and incident visibility.
+- Keep detailed PHI out of logs unless a formal compliance review approves the exact path.
 
 ## First Build Path
 
