@@ -27,3 +27,12 @@
 
 ## 4. Clinical & Legal Framework
 * **Clinical Validation:** John Lyon (Clinical Validation Partner).
+
+## 5. Data Intake, Scoring Runs, and Alert Delivery
+* **New information flow:** Facilities should upload CSV/XLSX/JSON/document exports into a staging area first. CensusGuard must clean, map, and validate source columns before any patient row is sent to Vertex AI.
+* **Do not send raw documents directly to Vertex scoring:** PDFs, DOCX notes, and other source files need extraction/review before they become structured model inputs.
+* **Score run log:** Every manual or scheduled score run should create an audit event showing patient/census scope, run time, source, status, and result/error summary.
+* **Shift scoring rules:** Scoring cadence must be configurable per facility. Day shift and night shift can have different start times and different frequencies.
+* **Default POC rule:** Start-of-shift digest plus immediate critical alerts. Day shift can run at start + every 4 hours; night shift can run at start + every 2 hours if the facility wants closer monitoring.
+* **Alert channels:** Support email, push notification, and in-dashboard queue. Critical alerts should be eligible for immediate delivery; lower-tier alerts can roll into shift digest.
+* **Backend hooks needed next:** File storage, data-cleaning job, score-run scheduler, score-run audit table, alert-recipient settings, and notification provider integration.

@@ -194,6 +194,16 @@ function formatScoreResult(result) {
   return "Score request completed";
 }
 
+function formatRunTime(value) {
+  if (!value) return "Never";
+  return new Date(value).toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 function getPatientOwner(patient, index = 0) {
   if (!patient) return "Unassigned";
   return patient.counselor || patient.assigned_counselor || patient.owner || ["T. Williams, LCDC", "R. Santos, CADC", "K. Patel, LCSW", "M. Johnson, LPC", "A. Rivera, CADC", "C. Kim, LMFT"][index % 6];
@@ -2265,6 +2275,18 @@ export function UnifiedCensusGuard({ mode = "dashboard" }) {
   const [scoreStatus, setScoreStatus] = useState("idle");
   const [scoreResult, setScoreResult] = useState(null);
   const [scoreError, setScoreError] = useState("");
+  const [scoreRuns, setScoreRuns] = useState([]);
+  const [stagedFiles, setStagedFiles] = useState([]);
+  const [alertSettings, setAlertSettings] = useState({
+    dayShiftStart: "07:00",
+    nightShiftStart: "19:00",
+    dayFrequency: "start-and-q4",
+    nightFrequency: "start-and-q2",
+    sendEmail: true,
+    sendPush: true,
+    sendShiftDigest: true,
+    criticalImmediate: true,
+  });
   
   const isMobile = useIsMobile();
   const validSections = new Set(NAV_AREAS.map((area) => area.id));
@@ -2327,10 +2349,47 @@ export function UnifiedCensusGuard({ mode = "dashboard" }) {
       const result = await censusGuardAdapter.scorePatient(buildVertexRiskPayload(patient));
       setScoreResult({ patient, result });
       setScoreStatus("complete");
+      setScoreRuns((runs) => [
+        {
+          id: `score-${Date.now()}`,
+          patientName: patient.name,
+          patientId: patient.id,
+          status: "complete",
+          resultLabel: formatScoreResult(result),
+          createdAt: new Date().toISOString(),
+          source: "Vertex AI",
+        },
+        ...runs,
+      ].slice(0, 8));
     } catch (error) {
-      setScoreError(error?.message || "Risk score request failed.");
+      const message = error?.message || "Risk score request failed.";
+      setScoreError(message);
       setScoreStatus("error");
+      setScoreRuns((runs) => [
+        {
+          id: `score-${Date.now()}`,
+          patientName: patient.name,
+          patientId: patient.id,
+          status: "error",
+          resultLabel: message,
+          createdAt: new Date().toISOString(),
+          source: "Vertex AI",
+        },
+        ...runs,
+      ].slice(0, 8));
     }
+  }
+
+  function stageUploadFiles(files) {
+    const accepted = Array.from(files || []).map((file) => ({
+      id: `${file.name}-${file.lastModified}`,
+      name: file.name,
+      size: file.size,
+      type: file.type || "unknown",
+      status: "Staged for cleaning",
+      createdAt: new Date().toISOString(),
+    }));
+    setStagedFiles((current) => [...accepted, ...current].slice(0, 8));
   }
 
   return (
@@ -2399,6 +2458,10 @@ export function UnifiedCensusGuard({ mode = "dashboard" }) {
             <div style={{fontSize:12,color:"#777",lineHeight:1.5,marginTop:5}}>
               Sends one patient through the secure Cloud Run bridge to Vertex AI. No browser-side Google credentials.
             </div>
+            <div style={{fontSize:11,color:"#666",lineHeight:1.5,marginTop:7}}>
+              Last run: <span style={{color:"#fff",fontWeight:900}}>{formatRunTime(scoreRuns[0]?.createdAt)}</span>
+              {scoreRuns[0]?.patientName && <span> for <span style={{color:"#10D8F0",fontWeight:900}}>{scoreRuns[0].patientName}</span></span>}
+            </div>
             {scoreStatus === "complete" && scoreResult && (
               <div style={{fontSize:12,color:"#10D8F0",fontWeight:900,marginTop:8}}>
                 {scoreResult.patient.name}: {formatScoreResult(scoreResult.result)}
@@ -2418,6 +2481,87 @@ export function UnifiedCensusGuard({ mode = "dashboard" }) {
           >
             {scoreStatus === "scoring" ? "SCORING..." : "RUN RISK SCORE"}
           </button>
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":"minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)",gap:14,marginBottom:22}}>
+          <div style={{backgroundColor:"#0a0a18",border:"1px solid #1a1a2e",borderRadius:6,padding:16}}>
+            <div style={{fontSize:10,letterSpacing:2,color:"#10D8F0",fontWeight:900,marginBottom:8}}>DATA INTAKE</div>
+            <div style={{fontSize:13,color:"#fff",fontWeight:900,marginBottom:6}}>Upload new patient/source files</div>
+            <div style={{fontSize:12,color:"#777",lineHeight:1.55,marginBottom:12}}>
+              Files are staged first. CensusGuard should clean, map, and review columns before sending rows to Vertex.
+            </div>
+            <label style={{display:"block",border:"1px dashed #10D8F066",borderRadius:5,padding:"14px 12px",cursor:"pointer",backgroundColor:"#05050c",textAlign:"center"}}>
+              <input
+                type="file"
+                multiple
+                accept=".csv,.xlsx,.xls,.json,.pdf,.doc,.docx,.txt"
+                onChange={(event) => stageUploadFiles(event.target.files)}
+                style={{display:"none"}}
+              />
+              <span style={{fontSize:12,color:"#10D8F0",fontWeight:900,letterSpacing:1}}>CHOOSE FILES TO STAGE</span>
+            </label>
+            <div style={{display:"grid",gap:7,marginTop:12}}>
+              {stagedFiles.length === 0 && <div style={{fontSize:11,color:"#555"}}>No files staged yet.</div>}
+              {stagedFiles.map((file) => (
+                <div key={file.id} style={{border:"1px solid #1a1a2e",borderRadius:4,padding:"8px 9px",backgroundColor:"#05050c"}}>
+                  <div style={{fontSize:12,color:"#fff",fontWeight:800,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{file.name}</div>
+                  <div style={{fontSize:10,color:"#777",marginTop:3}}>{file.status} · {Math.max(1, Math.round(file.size / 1024))} KB</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{backgroundColor:"#0a0a18",border:"1px solid #1a1a2e",borderRadius:6,padding:16}}>
+            <div style={{fontSize:10,letterSpacing:2,color:"#D4159A",fontWeight:900,marginBottom:8}}>SHIFT SCORING RULES</div>
+            <div style={{fontSize:13,color:"#fff",fontWeight:900,marginBottom:6}}>When should risk scores run?</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:12}}>
+              <label style={{fontSize:10,color:"#666",letterSpacing:1,fontWeight:900}}>
+                DAY START
+                <input type="time" value={alertSettings.dayShiftStart} onChange={(event)=>setAlertSettings({...alertSettings,dayShiftStart:event.target.value})} style={{width:"100%",marginTop:5,backgroundColor:"#05050c",border:"1px solid #2a2a3e",borderRadius:4,color:"#fff",padding:"8px"}} />
+              </label>
+              <label style={{fontSize:10,color:"#666",letterSpacing:1,fontWeight:900}}>
+                NIGHT START
+                <input type="time" value={alertSettings.nightShiftStart} onChange={(event)=>setAlertSettings({...alertSettings,nightShiftStart:event.target.value})} style={{width:"100%",marginTop:5,backgroundColor:"#05050c",border:"1px solid #2a2a3e",borderRadius:4,color:"#fff",padding:"8px"}} />
+              </label>
+            </div>
+            <label style={{display:"block",fontSize:10,color:"#666",letterSpacing:1,fontWeight:900,marginTop:10}}>
+              DAY FREQUENCY
+              <select value={alertSettings.dayFrequency} onChange={(event)=>setAlertSettings({...alertSettings,dayFrequency:event.target.value})} style={{width:"100%",marginTop:5,backgroundColor:"#05050c",border:"1px solid #2a2a3e",borderRadius:4,color:"#fff",padding:"8px"}}>
+                <option value="start-only">Start of shift only</option>
+                <option value="start-and-q4">Start + every 4 hours</option>
+                <option value="start-and-q2">Start + every 2 hours</option>
+                <option value="manual">Manual only</option>
+              </select>
+            </label>
+            <label style={{display:"block",fontSize:10,color:"#666",letterSpacing:1,fontWeight:900,marginTop:10}}>
+              NIGHT FREQUENCY
+              <select value={alertSettings.nightFrequency} onChange={(event)=>setAlertSettings({...alertSettings,nightFrequency:event.target.value})} style={{width:"100%",marginTop:5,backgroundColor:"#05050c",border:"1px solid #2a2a3e",borderRadius:4,color:"#fff",padding:"8px"}}>
+                <option value="start-only">Start of shift only</option>
+                <option value="start-and-q4">Start + every 4 hours</option>
+                <option value="start-and-q2">Start + every 2 hours</option>
+                <option value="manual">Manual only</option>
+              </select>
+            </label>
+          </div>
+
+          <div style={{backgroundColor:"#0a0a18",border:"1px solid #1a1a2e",borderRadius:6,padding:16}}>
+            <div style={{fontSize:10,letterSpacing:2,color:"#f0c040",fontWeight:900,marginBottom:8}}>ALERT DELIVERY</div>
+            <div style={{fontSize:13,color:"#fff",fontWeight:900,marginBottom:6}}>How should alerts fire?</div>
+            {[
+              ["sendEmail", "Email care team"],
+              ["sendPush", "Push notification"],
+              ["sendShiftDigest", "Start-of-shift digest"],
+              ["criticalImmediate", "Critical alerts immediately"],
+            ].map(([key,label]) => (
+              <label key={key} style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:12,borderBottom:"1px solid #111125",padding:"10px 0",fontSize:12,color:"#ddd",fontWeight:800}}>
+                {label}
+                <input type="checkbox" checked={Boolean(alertSettings[key])} onChange={(event)=>setAlertSettings({...alertSettings,[key]:event.target.checked})} />
+              </label>
+            ))}
+            <div style={{fontSize:11,color:"#777",lineHeight:1.55,marginTop:10}}>
+              Backend hook next: create scheduled jobs per facility, then send alerts through approved email and mobile/push providers.
+            </div>
+          </div>
         </div>
 
         {/* Patient Monitor */}
